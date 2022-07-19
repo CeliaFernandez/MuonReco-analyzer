@@ -87,10 +87,6 @@ class standaloneDuplicates : public edm::one::EDAnalyzer<edm::one::SharedResourc
       edm::EDGetTokenT<edm::View<reco::Muon> > muonToken_;
       edm::Handle<edm::View<reco::Muon> > muonCollection_;
 
-      // Gen collection
-      edm::EDGetTokenT<edm::View<reco::GenParticle> > genToken_;
-      edm::Handle<edm::View<reco::GenParticle> > genCollection_;
-
       //
       // --- Variables used
       //
@@ -107,6 +103,11 @@ class standaloneDuplicates : public edm::one::EDAnalyzer<edm::one::SharedResourc
       TH1F* h_STA_eta;
       TH1F* h_STA_phi;
 
+      TH1F* h_nGLB;
+      TH1F* h_GLB_pt;
+      TH1F* h_GLB_eta;
+      TH1F* h_GLB_phi;
+
       TH1F* h_nPairs;
       TH1F* h_Nextra;
       TH1F* h_Nshared;
@@ -117,6 +118,7 @@ class standaloneDuplicates : public edm::one::EDAnalyzer<edm::one::SharedResourc
 
       TH2F* h_ptGLB_ptSTA;           
       TH2F* h_etaGLB_etaSTA;           
+      TH2F* h_etaGLB_etaSTA_loweta;           
       TH2F* h_phiGLB_phiSTA;           
       TH2F* h_nDTGLB_nDTSTA;           
       TH2F* h_nCSCGLB_nCSCSTA;           
@@ -141,12 +143,15 @@ standaloneDuplicates::standaloneDuplicates(const edm::ParameterSet& iConfig)
    parameters = iConfig;
    
    muonToken_  = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
-   genToken_   = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genCollection"));
 
    h_nSTA = new TH1F("h_nSTA", "Number of StandAlone muons; Number of events; Counts", 10, 0, 10);
    h_STA_pt = new TH1F("h_STA_pt", "StandAlone muon p_{T} (GeV); Number of muons; Counts", 100, 0, 100);
    h_STA_phi = new TH1F("h_STA_phi", "StandAlone muon #phi; Number of muons; Counts", 100, -3.14, 3.14);
-   h_STA_eta = new TH1F("h_STA_pt", "StandAlone muon #eta; Number of muons; Counts", 100, -3, 3);
+   h_STA_eta = new TH1F("h_STA_eta", "StandAlone muon #eta; Number of muons; Counts", 100, -3, 3);
+   h_nGLB = new TH1F("h_nGLB", "Number of Global muons; Number of events; Counts", 10, 0, 10);
+   h_GLB_pt = new TH1F("h_GLB_pt", "Global muon p_{T} (GeV); Number of muons; Counts", 100, 0, 100);
+   h_GLB_phi = new TH1F("h_GLB_phi", "Global muon #phi; Number of muons; Counts", 100, -3.14, 3.14);
+   h_GLB_eta = new TH1F("h_GLB_eta", "Global muon #eta; Number of muons; Counts", 100, -3, 3);
    h_nPairs = new TH1F("h_nPairs", "Number of STA pairs (common segment); Number of pairs; Counts", 3, 0, 3);
    h_Nextra = new TH1F("h_Nextra", "Number of StandAlone pairs (same TrackExtra); Number of pairs; Counts", 3, 0, 3);
    h_Nshared = new TH1F("h_Nshared", "Number of StandAlone pairs (common hit); Number of pairs; Counts", 3, 0, 3);
@@ -154,12 +159,13 @@ standaloneDuplicates::standaloneDuplicates(const edm::ParameterSet& iConfig)
    h_nCommonHits = new TH1F("h_nCommonHits", "; Number of shared hits; Number of pairs", 25, 0, 25);
    h_nCommonSegments_nCommonHits = new TH2F("h_nCommonSegments_nCommonHits", "; Number of shared segments; Number of shared hits", 10, 0, 10, 25, 0, 25);
    h_nGLBsInPair = new TH1F("h_nGLBsInPair", "Number of GLB muons in pair; Counts", 3, 0, 3);
-   h_ptGLB_ptSTA = new TH2F("h_ptGLB_ptSTA", ";GLB p_{T} (GeV); STA (only) p_{T} (GeV)", 40, 0, 80, 40, 0, 80);
-   h_etaGLB_etaSTA = new TH2F("h_etaGLB_etaSTA2", ";GLB #eta; STA (only) #eta", 40, -2.4, 2.4, 40, -2.4, 2.4);
-   h_phiGLB_phiSTA = new TH2F("h_phiGLB_phiSTA", ";GLB #phi; STA (only) #phi", 40, -3.14, 3.14, 40, -3.14, 3.14);
-   h_nDTGLB_nDTSTA = new TH2F("h_nDTGLB_nDTSTA", ";GLB N_{DT}; STA (only) N_{DT}", 30, 0, 30, 30, 0, 30);
-   h_nCSCGLB_nCSCSTA = new TH2F("h_nCSCGLB_nCSCSTA", ";GLB N_{CSC}; STA (only) N_{CSC}", 20, 0, 20, 20, 0, 20);
-   h_nHitsGLB_nHitsSTA = new TH2F("h_nHitsGLB_nHitsSTA", ";GLB N_{Hits}; STA (only) N_{Hits}", 30, 0, 30, 30, 0, 30);
+   h_ptGLB_ptSTA = new TH2F("h_ptGLB_ptSTA", ";STA (from GLB) p_{T} (GeV); STA (only) p_{T} (GeV)", 40, 0, 80, 40, 0, 80);
+   h_etaGLB_etaSTA = new TH2F("h_etaGLB_etaSTA", ";STA (from GLB) #eta; STA (only) #eta", 40, -2.4, 2.4, 40, -2.4, 2.4);
+   h_etaGLB_etaSTA_loweta = new TH2F("h_etaGLB_etaSTA_loweta", ";STA (from GLB) #eta; STA (only) #eta", 40, -0.01, 0.01, 40, -0.01, 0.01);
+   h_phiGLB_phiSTA = new TH2F("h_phiGLB_phiSTA", ";STA (from GLB) #phi; STA (only) #phi", 40, -3.14, 3.14, 40, -3.14, 3.14);
+   h_nDTGLB_nDTSTA = new TH2F("h_nDTGLB_nDTSTA", ";STA (from GLB) N_{DT}; STA (only) N_{DT}", 30, 0, 30, 30, 0, 30);
+   h_nCSCGLB_nCSCSTA = new TH2F("h_nCSCGLB_nCSCSTA", ";STA (from GLB) N_{CSC}; STA (only) N_{CSC}", 20, 0, 20, 20, 0, 20);
+   h_nHitsGLB_nHitsSTA = new TH2F("h_nHitsGLB_nHitsSTA", ";STA (from GLB) N_{Hits}; STA (only) N_{Hits}", 30, 0, 30, 30, 0, 30);
 }
 
 
@@ -196,13 +202,20 @@ void standaloneDuplicates::endJob()
   h_STA_pt->Write();
   h_STA_eta->Write();
   h_STA_phi->Write();
+  h_nGLB->Write();
+  h_GLB_pt->Write();
+  h_GLB_eta->Write();
+  h_GLB_phi->Write();
   h_nPairs->Write();
+  h_Nextra->Write();
+  h_Nshared->Write();
   h_nGLBsInPair->Write();
   h_nCommonSegments->Write();
   h_nCommonHits->Write();
   h_nCommonSegments_nCommonHits->Write();
   h_ptGLB_ptSTA->Write();
   h_etaGLB_etaSTA->Write();
+  h_etaGLB_etaSTA_loweta->Write();
   h_phiGLB_phiSTA->Write();
   h_nDTGLB_nDTSTA->Write();
   h_nCSCGLB_nCSCSTA->Write();
@@ -231,7 +244,6 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
 {
 
    iEvent.getByToken(muonToken_, muonCollection_);
-   iEvent.getByToken(genToken_, genCollection_);
 
    //
    // -- Init the variables
@@ -255,24 +267,13 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
    //
    // -- Main analysis
    //
-   
 
-   // Generated muons
-   std::vector<reco::GenParticle> genMuons;
-   for (const auto& gen : *genCollection_) {
-     if (fabs(gen.pdgId()) != 13)
-       continue;
-     if (gen.status() != 1)
-       continue;
-     genMuons.push_back(gen);
-   }
-
-   //std::cout << "Number of generated muons: " << genMuons.size() << std::endl; 
 
    // Reconstructed muons
    //std::vector<reco::Muon> muons;
    std::vector<int> iMu; // index of STA muons
    int nSTA = 0;
+   int nGLB = 0;
    for (size_t i = 0; i < muonCollection_->size(); i++) {
      const reco::Muon &muon = (*muonCollection_)[i];
      if (muon.isStandAloneMuon()) {
@@ -282,8 +283,15 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
        h_STA_eta->Fill(muon.outerTrack()->eta());
        h_STA_phi->Fill(muon.outerTrack()->phi());
      }
+     if (muon.isGlobalMuon()) {
+       nGLB++;
+       h_GLB_pt->Fill(muon.globalTrack()->pt());
+       h_GLB_eta->Fill(muon.globalTrack()->eta());
+       h_GLB_phi->Fill(muon.globalTrack()->phi());
+     }
    }
    h_nSTA->Fill(nSTA);
+   h_nGLB->Fill(nGLB);
 
 
    // Study duplicates
@@ -339,6 +347,7 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
            // Fill plot pairs:
            h_ptGLB_ptSTA->Fill(globalMu.outerTrack()->pt(), staMu.outerTrack()->pt());
            h_etaGLB_etaSTA->Fill(globalMu.outerTrack()->eta(), staMu.outerTrack()->eta());
+           h_etaGLB_etaSTA_loweta->Fill(globalMu.outerTrack()->eta(), staMu.outerTrack()->eta());
            h_phiGLB_phiSTA->Fill(globalMu.outerTrack()->phi(), staMu.outerTrack()->phi());
            h_nDTGLB_nDTSTA->Fill(globalMu.outerTrack()->hitPattern().numberOfValidMuonDTHits(), staMu.outerTrack()->hitPattern().numberOfValidMuonDTHits());
            h_nCSCGLB_nCSCSTA->Fill(globalMu.outerTrack()->hitPattern().numberOfValidMuonCSCHits(), staMu.outerTrack()->hitPattern().numberOfValidMuonCSCHits());

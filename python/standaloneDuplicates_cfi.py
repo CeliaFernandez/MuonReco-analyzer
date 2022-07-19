@@ -5,9 +5,7 @@ standaloneDuplicates = cms.EDAnalyzer('standaloneDuplicates',
     EventInfo = cms.InputTag("generator"),
     RunInfo = cms.InputTag("generator"),
     BeamSpot = cms.InputTag("offlineBeamSpot"),
-    muonCollection = cms.InputTag("muons"),
-    genCollection = cms.InputTag("genParticles"),
-    theGenEventInfoProduct = cms.InputTag("generator"),
+    muonCollection = cms.InputTag("muons")
 )
 
 
