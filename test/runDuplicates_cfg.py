@@ -1,10 +1,19 @@
 import FWCore.ParameterSet.Config as cms
 import os
 
-# Run standaloneDuplicates plugin
 #
-# @ Celia Fernandez Madrazo 
-
+# Test file to evaluate duplicated muons in reco::Muon 'muons' collection
+# 2 steps:
+#
+#  - Redo the muon merging (MuonIdProducer) with standalone and global muons
+#    to create a new collection 'fixedMuons' where fix can be applied
+#    (Tracker muons cannot be redone from AOD)
+#
+#  - Run the standaloneDuplicates.cc plugin on both raw and fixed collections
+#    to compare
+#
+# @ Celia Fernandez Madrazo (Wed 19/07/2022)
+#
 
 process = cms.Process("demo")
 process.load('Configuration.StandardSequences.GeometryDB_cff')
@@ -13,10 +22,8 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
-# Debug printout & summaries.
+# Debug printout and summary.
 process.load("FWCore.MessageService.MessageLogger_cfi")
-#process.MessageLogger.cerr.FwkReport.limit = cms.untracked.int32(50)
-#process.MessageLogger.cerr.default.limit = cms.untracked.int32(50)
 
 process.options = cms.untracked.PSet(
   wantSummary = cms.untracked.bool(True),
@@ -33,11 +40,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
 isData = True # Always true by default (running on MC is useless)
-inputdir = "/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/skimmed-duplicatedmuons_0eta/220601_141623/"
 inputdir = "/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/crab_pickEvents/220718_103333/0000/"
 listOfFiles = ['file:' + os.path.join(inputdir, f) for f in os.listdir(inputdir) if '.root' in f]
-
-#listOfFiles = ['file:/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/DuplicatedMuons-study/CMSSW_10_6_20/src/RecoMuon/MuonIdentification/test/redo_muons.root']
 
 if (isData):
   process.source = cms.Source("PoolSource",
@@ -104,7 +108,6 @@ process.duplicates = cms.Sequence(process.globalMuonLinks*
                                   process.standaloneDuplicates*
                                   process.fixedDuplicates)
 
-#process.duplicates = cms.Sequence(process.standaloneDuplicates*process.fixedDuplicates)
 
 process.p = cms.EndPath(process.duplicates)
 

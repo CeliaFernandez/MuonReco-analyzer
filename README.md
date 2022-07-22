@@ -5,13 +5,33 @@
 
 Run the following set of commands:
 ```
-cmsrel CMSSW_10_6_20
-cd CMSSW_10_6_20/src
+cmsrel CMSSW_X_Y_Z
+cd CMSSW_X_Y_Z/src
 mkdir MuonReco-Analysis
 cd MuonReco-Analysis
 git clone git@github.com:CeliaFernandez/MuonReco-analyzer.git
 scram b -j 8
 ```
+
+## Plugins
+
+### Duplicated muons
+(Working release is ```CMSSW_10_6_20```)
+Code developed to study the presence of standalone muons that are made from the same set of hits (duplicates). This shouldn't be allowed by CMSSW as cleaning is applied on standalone tracks.
+
+Plugin is available in ```plugins/standaloneDuplicates.cc``` and config parameters in ```python/standaloneDuplicates_cfi.py```.
+
+It can be run iteratively through:
+```
+cmsRun test/runDuplicates_cfg.py
+```
+or with crab:
+```
+crab submit crab_duplicatedMuons_cfg.py
+```
+
+
+Note that input files and some absolute paths may need to be modified.
 
 ## Skims
 

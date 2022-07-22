@@ -11,21 +11,44 @@ if __name__ == "__main__":
     r.setTDRStyle()
     r.gStyle.SetPadRightMargin(0.12)
 
-    filename = '/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/Analysis/CMSSW_10_6_20/src/MuonReco-Analysis/MuonReco-analyzer/output.root'
+    filenameFIXED = '/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/duplicatedMuons-Jul22/220719_150942/outputFIXED.root'
+    filenameRAW = '/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/duplicatedMuons-Jul22/220719_150942/outputRAW.root'
 
-    h_pt1_pt2 = getObject(filename, 'h_ptGLB_ptSTA')
-    h_eta1_eta2 = getObject(filename, 'h_etaGLB_etaSTA')
-    h_eta1_eta2_low = getObject(filename, 'h_etaGLB_etaSTA_loweta')
-    h_phi1_phi2 = getObject(filename, 'h_phiGLB_phiSTA')
-    h_nDT1_nDT2 = getObject(filename, 'h_nDTGLB_nDTSTA')
-    h_nCSC1_nCSC2 = getObject(filename, 'h_nCSCGLB_nCSCSTA')
-    h_nHits1_nHits2 = getObject(filename, 'h_nHitsGLB_nHitsSTA')
+    ## Plot histograms
+    h_RAW_nSTA = getObject(filenameRAW, 'h_nSTA')
+    h_RAW_nGLB = getObject(filenameRAW, 'h_nGLB')
+    h_RAW_STA_eta = getObject(filenameRAW, 'h_STA_eta')
+    h_RAW_GLB_eta = getObject(filenameRAW, 'h_GLB_eta')
+    h_RAW_eta1_eta2 = getObject(filenameRAW, 'h_etaGLB_etaSTA')
+    h_RAW_eta1_eta2_low = getObject(filenameRAW, 'h_etaGLB_etaSTA_loweta')
+    h_RAW_nDT1_nDT2 = getObject(filenameRAW, 'h_nDTGLB_nDTSTA')
+    h_RAW_nCSC1_nCSC2 = getObject(filenameRAW, 'h_nCSCGLB_nCSCSTA')
+    h_RAW_nHits1_nHits2 = getObject(filenameRAW, 'h_nHitsGLB_nHitsSTA')
 
-    plot2D(h_pt1_pt2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_eta1_eta2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_eta1_eta2_low, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_phi1_phi2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_nDT1_nDT2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_nCSC1_nCSC2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
-    plot2D(h_nHits1_nHits2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
+    h_FIXED_nSTA = getObject(filenameFIXED, 'h_nSTA')
+    h_FIXED_nGLB = getObject(filenameFIXED, 'h_nGLB')
+    h_FIXED_STA_eta = getObject(filenameFIXED, 'h_STA_eta')
+    h_FIXED_GLB_eta = getObject(filenameFIXED, 'h_GLB_eta')
+    h_FIXED_eta1_eta2 = getObject(filenameFIXED, 'h_etaGLB_etaSTA')
+    h_FIXED_eta1_eta2_low = getObject(filenameFIXED, 'h_etaGLB_etaSTA_loweta')
+    h_FIXED_nDT1_nDT2 = getObject(filenameFIXED, 'h_nDTGLB_nDTSTA')
+    h_FIXED_nCSC1_nCSC2 = getObject(filenameFIXED, 'h_nCSCGLB_nCSCSTA')
+    h_FIXED_nHits1_nHits2 = getObject(filenameFIXED, 'h_nHitsGLB_nHitsSTA')
 
+    ## Tune
+    h_RAW_STA_eta.Rebin(2)
+    h_RAW_GLB_eta.Rebin(2)
+    h_FIXED_STA_eta.Rebin(2)
+    h_FIXED_GLB_eta.Rebin(2)
+
+
+    plot2D(h_RAW_eta1_eta2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', zlog = True)
+    plot2D(h_RAW_eta1_eta2_low, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', maxDigits = 3)
+    plot2D(h_RAW_nDT1_nDT2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
+    plot2D(h_RAW_nCSC1_nCSC2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
+    plot2D(h_RAW_nHits1_nHits2, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/')
+
+    plotValidation(h_FIXED_nSTA, h_RAW_nSTA, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', 'Fixed', 'Original', "", ylog = False)
+    plotValidation(h_FIXED_STA_eta, h_RAW_STA_eta, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', 'Fixed', 'Original', "", ylog = False)
+    plotValidation(h_FIXED_nGLB, h_RAW_nGLB, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', 'Fixed', 'Original', "", ylog = False)
+    plotValidation(h_FIXED_GLB_eta, h_RAW_GLB_eta, '/eos/user/f/fernance/www/MuonPOG/MuonDuplicates-220622/', 'Fixed', 'Original', "", ylog = False)
