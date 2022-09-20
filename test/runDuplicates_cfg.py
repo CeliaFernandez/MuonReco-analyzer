@@ -40,8 +40,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
 isData = True # Always true by default (running on MC is useless)
-inputdir = "/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/crab_pickEvents/220718_103333/0000/"
-listOfFiles = ['file:' + os.path.join(inputdir, f) for f in os.listdir(inputdir) if '.root' in f]
+#inputdir = "/eos/user/f/fernance/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/crab_pickEvents/220718_103333/0000/"
+#listOfFiles = ['file:' + os.path.join(inputdir, f) for f in os.listdir(inputdir) if '.root' in f]
+listOfFiles = ['/store/mc/RunIISummer20UL16RECO/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/AODSIM/106X_mcRun2_asymptotic_v13-v2/00000/0001EFA7-97DF-4A45-84A9-79448BFD814B.root']
 
 if (isData):
   process.source = cms.Source("PoolSource",
