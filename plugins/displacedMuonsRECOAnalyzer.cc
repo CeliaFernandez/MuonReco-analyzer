@@ -48,6 +48,8 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/MuonReco/interface/MuonSegmentMatch.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -64,10 +66,10 @@
 
 #include "helper.h"
 
-class displacedMuonsPATAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class displacedMuonsRECOAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
-      explicit displacedMuonsPATAnalyzer(const edm::ParameterSet&);
-      ~displacedMuonsPATAnalyzer();
+      explicit displacedMuonsRECOAnalyzer(const edm::ParameterSet&);
+      ~displacedMuonsRECOAnalyzer();
       edm::ConsumesCollector iC = consumesCollector();
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -84,8 +86,8 @@ class displacedMuonsPATAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedRe
       //
 
       // Muon collection
-      edm::EDGetTokenT<edm::View<pat::Muon> > patToken_;
-      edm::Handle<edm::View<pat::Muon> > patCollection_;
+      edm::EDGetTokenT<edm::View<reco::Muon> > patToken_;
+      edm::Handle<edm::View<reco::Muon> > patCollection_;
 
       //
       // --- Variables used
@@ -98,7 +100,10 @@ class displacedMuonsPATAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedRe
 
       // Histograms definition
 
-      TH2F* h_PATsegments_DSAsegments;
+      TH2F* h_MUONsegments_DSAsegments;
+      TH2F* h_MUONbestsegments_DSAsegments;
+      TH2F* h_MUONmatches_DSAsegments;
+      TH2F* h_MUONmatches_DSAchambers;
 
       // Output definition
       TFile *file_out;
@@ -111,17 +116,20 @@ class displacedMuonsPATAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedRe
 ////////
 //////// -- Constructor
 ////////
-displacedMuonsPATAnalyzer::displacedMuonsPATAnalyzer(const edm::ParameterSet& iConfig)
+displacedMuonsRECOAnalyzer::displacedMuonsRECOAnalyzer(const edm::ParameterSet& iConfig)
 {
 
    usesResource("TFileService");
 
    parameters = iConfig;
    
-   patToken_  = consumes<edm::View<pat::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
+   patToken_  = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
 
 
-   h_PATsegments_DSAsegments   = new TH2F("h_PATsegments_DSAsegmentsA", "; muon.numberOfMatches(); nsegments", 15, 0, 15, 15, 0, 15);
+   h_MUONsegments_DSAsegments   = new TH2F("h_MUONsegments_DSAsegments", "; segments from muon.matches(); nsegments", 15, 0, 15, 15, 0, 15);
+   h_MUONbestsegments_DSAsegments   = new TH2F("h_MUONbestsegments_DSAsegments", "; segments from muon.bestTrack(); nsegments", 15, 0, 15, 15, 0, 15);
+   h_MUONmatches_DSAsegments   = new TH2F("h_MUONmatches_DSAsegments", "; muon.numberOfMatches(); nsegments", 15, 0, 15, 15, 0, 15);
+   h_MUONmatches_DSAchambers   = new TH2F("h_MUONmatches_DSAchambers", "; muon.numberOfMatches(); nchambers", 15, 0, 15, 15, 0, 15);
 
 
 }
@@ -131,7 +139,7 @@ displacedMuonsPATAnalyzer::displacedMuonsPATAnalyzer(const edm::ParameterSet& iC
 ////////
 //////// -- Destructor
 ////////
-displacedMuonsPATAnalyzer::~displacedMuonsPATAnalyzer()
+displacedMuonsRECOAnalyzer::~displacedMuonsRECOAnalyzer()
 {
 
 }
@@ -139,7 +147,7 @@ displacedMuonsPATAnalyzer::~displacedMuonsPATAnalyzer()
 ////////
 //////// -- BeginJob
 ////////
-void displacedMuonsPATAnalyzer::beginJob()
+void displacedMuonsRECOAnalyzer::beginJob()
 {
   std::cout << "Begin Job" << std::endl;
 
@@ -151,11 +159,14 @@ void displacedMuonsPATAnalyzer::beginJob()
 ////////
 //////// -- EndJob
 ////////
-void displacedMuonsPATAnalyzer::endJob()
+void displacedMuonsRECOAnalyzer::endJob()
 {
   std::cout << "End Job" << std::endl;
   file_out->cd();
-  h_PATsegments_DSAsegments->Write();
+  h_MUONsegments_DSAsegments->Write();
+  h_MUONbestsegments_DSAsegments->Write();
+  h_MUONmatches_DSAsegments->Write();
+  h_MUONmatches_DSAchambers->Write();
   file_out->Close();
 
 }
@@ -164,7 +175,7 @@ void displacedMuonsPATAnalyzer::endJob()
 ////////
 //////// -- fillDescriptions
 ////////
-void displacedMuonsPATAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void displacedMuonsRECOAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -176,7 +187,7 @@ void displacedMuonsPATAnalyzer::fillDescriptions(edm::ConfigurationDescriptions&
 ////////
 //////// -- Analyze
 ////////
-void displacedMuonsPATAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+void displacedMuonsRECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
    iEvent.getByToken(patToken_, patCollection_);
@@ -204,19 +215,44 @@ void displacedMuonsPATAnalyzer::analyze(const edm::Event& iEvent, const edm::Eve
    // -- Main analysis
    //
    for (unsigned int i = 0; i < patCollection_->size(); i++) {
-     const pat::Muon& muon(patCollection_->at(i));
-     std::cout << "Best muon pt: " << muon.pt() << std::endl;
-     std::cout << "Best muon inner x: " << muon.bestTrack()->extra()->innerPosition().x() << std::endl;
-     if (muon.isGlobalMuon()){
-         const reco::Track* dgl = muon.combinedMuon().get();
-         //std::cout << "Combined muon pt: " << dgl->pt() << std::endl;
-         //std::cout << "Combined muon inner x: " << dgl->innerPosition().x() << std::endl;
-     }
+     const reco::Muon& muon(patCollection_->at(i));
      if (muon.isStandAloneMuon()){
-       //const reco::Track* dsa = muon.standAloneMuon().get();
-       const reco::Track* best = muon.bestTrack();
+
+       const reco::Track* dsa = muon.standAloneMuon().get();
        //std::cout << "Standalone muon pt: " << dsa->pt() << std::endl;
+       unsigned int nsegments = 0;
+       unsigned int nchambers = 0;
+       std::vector<DetId> matchedchambers;
+       for (trackingRecHit_iterator hit = dsa->recHitsBegin(); hit != dsa->recHitsEnd(); ++hit) {
+         if (!(*hit)->isValid()) continue;
+         DetId id = (*hit)->geographicalId();
+         if (id.det() != DetId::Muon) continue;
+         if (id.subdetId() == MuonSubdetId::DT || id.subdetId() == MuonSubdetId::CSC) {
+           nsegments++;
+           if (std::find(matchedchambers.begin(), matchedchambers.end(), id) != matchedchambers.end()){
+             continue;
+           } else {
+             nchambers++;
+             matchedchambers.push_back(id);
+           }
+         }
+       }
+
+       unsigned int nmuonchambers = 0;
+       unsigned int nmuonsegments = 0;
+       for (auto& chamber : muon.matches()) {
+         if (!(chamber.detector() == MuonSubdetId::DT || chamber.detector() == MuonSubdetId::CSC))
+           continue;
+         nmuonchambers++;
+         for (auto& segment : chamber.segmentMatches) {
+           if (!(segment.isMask(reco::MuonSegmentMatch::BelongsToTrackByCleaning))) continue;
+           nmuonsegments++;
+         }
+       }
+
+       const reco::Track *best = muon.bestTrack();
        unsigned int nbestsegments = 0;
+       /*
        for (trackingRecHit_iterator hit = best->extra()->recHitsBegin(); hit != best->extra()->recHitsEnd(); ++hit) {
          if (!(*hit)->isValid()) continue;
          DetId id = (*hit)->geographicalId();
@@ -225,10 +261,12 @@ void displacedMuonsPATAnalyzer::analyze(const edm::Event& iEvent, const edm::Eve
            nbestsegments++;
          }
        }
+       */
 
-       std::cout << nbestsegments << std::endl;
-
-       h_PATsegments_DSAsegments->Fill(muon.numberOfMatches(), nbestsegments);
+       h_MUONsegments_DSAsegments->Fill(nmuonsegments, nsegments);
+       h_MUONmatches_DSAsegments->Fill(muon.numberOfMatches(), nsegments);
+       h_MUONmatches_DSAchambers->Fill(muon.numberOfMatches(), nchambers);
+       h_MUONbestsegments_DSAsegments->Fill(nbestsegments, nsegments);
 
      }
    } 
@@ -239,4 +277,4 @@ void displacedMuonsPATAnalyzer::analyze(const edm::Event& iEvent, const edm::Eve
 }
 
 
-DEFINE_FWK_MODULE(displacedMuonsPATAnalyzer);
+DEFINE_FWK_MODULE(displacedMuonsRECOAnalyzer);
