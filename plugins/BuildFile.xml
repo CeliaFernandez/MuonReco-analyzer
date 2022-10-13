@@ -14,6 +14,10 @@
 <use name="DataFormats/RecoCandidate"/>
 <use name="DataFormats/HepMCCandidate"/>
 <use name="DataFormats/VertexReco"/>
+<use name="DataFormats/DetId"/>
+<use name="DataFormats/DTRecHit"/>
+<use name="DataFormats/CSCRecHit"/>
+<use name="DataFormats/GEMRecHit"/>
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="DataFormats/BeamSpot"/>
 <use name="TrackingTools/TransientTrack"/>
