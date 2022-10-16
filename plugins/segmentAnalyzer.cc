@@ -89,8 +89,8 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       //
 
       // Muon collection
-      //edm::EDGetTokenT<edm::View<pat::Muon> > patToken_;
-      //edm::Handle<edm::View<pat::Muon> > patCollection_;
+      edm::EDGetTokenT<edm::View<reco::Muon> > muonToken_;
+      edm::Handle<edm::View<reco::Muon> > muonCollection_;
 
       // Segment labels
       edm::InputTag theDTRecSegment4DCollectionLabel;
@@ -119,8 +119,8 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       Int_t luminosityBlock = 0;
       Int_t run = 0;
 
-      // Histograms definition
-
+      // Segments histograms
+      // (study the performance of reco segments)
       TH1F* h_total1_number;
       TH1F* h_total2_number;
       TH1F* h_dtSegments_number;
@@ -129,6 +129,15 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       TH1F* h_rpcHits_number;
       TH1F* h_gemHits_number;
       TH2F* h_dtSegments_cscSegments_number;
+
+      // Muon histogras histograms
+      // (study the performance of tracker muon segments)
+      TH1F* h_trackerMuons_size;
+      TH1F* h_trackerMuons_numberOfMatches;
+      TH1F* h_trackerMuons_numberOfSegments;
+      TH1F* h_trackerMuons_segmentX;
+      TH1F* h_trackerMuons_segmentY;
+
 
       // Output definition
       TFile *file_out;
@@ -148,6 +157,8 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
 
    parameters = iConfig;
    
+   muonToken_     = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
+
    theDTRecSegment4DCollectionLabel = iConfig.getParameter<edm::InputTag>("DTRecSegment4DCollectionLabel");
    theCSCSegmentCollectionLabel     = iConfig.getParameter<edm::InputTag>("CSCSegmentCollectionLabel");
    theGEMSegmentCollectionLabel     = iConfig.getParameter<edm::InputTag>("GEMSegmentCollectionLabel");
@@ -160,10 +171,9 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    gemSegmentsToken = consumes<GEMSegmentCollection>(theGEMSegmentCollectionLabel);
    rpcHitsToken     = consumes<RPCRecHitCollection>(theRPCHitCollectionLabel);
    gemHitsToken     = consumes<GEMRecHitCollection>(theGEMHitCollectionLabel);
-
-   //gemSegmentsToken = iC.consumes<GEMSegmentCollection>(theGEMSegmentCollectionLabel);
    //me0SegmentsToken = iC.consumes<ME0SegmentCollection>(theME0SegmentCollectionLabel);
 
+   // Histograms
    h_total1_number        = new TH1F("h_total1_number", "; dtSegments.size() + cscSegments.size() + rpcRecHits.size(); Events", 100, 0, 100);
    h_total2_number        = new TH1F("h_total2_number", "; dtSegments.size() + cscSegments.size() + rpcRecHits.size() + gemSegments.size() + gemRecHits.size(); Events", 100, 0, 100);
    h_dtSegments_number    = new TH1F("h_dtSegments_number", "; dtSegments.size(); Events", 30, 0, 30);
@@ -174,6 +184,11 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    //h_me0Segments_number   = new TH1F("h_me0Segments_number", "; me0Segments.size(); Events", 30, 0, 30);
    h_dtSegments_cscSegments_number   = new TH2F("h_dtSegments_cscSegments_number", "; dtSegments.size(); cscSegments.size()", 30, 0, 30, 30, 0, 30);
 
+   h_trackerMuons_size               = new TH1F("h_trackerMuons_size", "; Number of Tracker Muons; Events", 10, 0, 10);
+   h_trackerMuons_numberOfMatches    = new TH1F("h_trackerMuons_numberOfMatches", "; muon.numberOfMatches(); Events", 14, 0, 14);
+   h_trackerMuons_numberOfSegments   = new TH1F("h_trackerMuons_numberOfSegments", "; Number of segments; Events", 30, 0, 30);
+   h_trackerMuons_segmentX           = new TH1F("h_trackerMuons_segmentX", "; Segment X position; Events", 50, -200 , 200);
+   h_trackerMuons_segmentY           = new TH1F("h_trackerMuons_segmentY", "; Segment Y position; Events", 50, -1 , 1);
 
 }
 
@@ -206,6 +221,13 @@ void segmentAnalyzer::endJob()
 {
   std::cout << "End Job" << std::endl;
   file_out->cd();
+
+  h_trackerMuons_size->Write();
+  h_trackerMuons_numberOfMatches->Write();
+  h_trackerMuons_numberOfSegments->Write();
+  h_trackerMuons_segmentX->Write();
+  h_trackerMuons_segmentY->Write();
+
   h_total1_number->Write();
   h_total2_number->Write();
   h_dtSegments_number->Write();
@@ -240,6 +262,8 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    //
    // -- Get the collections
    //
+
+   iEvent.getByToken(muonToken_, muonCollection_);
 
    edm::Handle<DTRecSegment4DCollection> dtSegments;
    iEvent.getByToken(dtSegmentsToken, dtSegments);
@@ -279,6 +303,42 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    //
    // -- Main analysis
    //
+   //
+
+   // Fill muon analyiss
+   int nTRK;
+   int nChambersDT;
+   int nChambersCSC;
+   int nSegments;
+   nTRK = 0;
+   for (size_t i = 0; i < muonCollection_->size(); i++) {
+     const reco::Muon &muon = (*muonCollection_)[i];
+     if (muon.isTrackerMuon()) {
+       nTRK++;
+       h_trackerMuons_numberOfMatches->Fill(muon.numberOfMatches());
+       // Loop over chambers
+       nChambersDT = 0;
+       nChambersCSC = 0;
+       nSegments = 0;
+       for (auto& chamber : muon.matches()) {
+         if (chamber.detector() == MuonSubdetId::DT)
+           nChambersDT++; 
+         if (chamber.detector() == MuonSubdetId::CSC)
+           nChambersCSC++; 
+         for (auto& segment : chamber.segmentMatches) {
+           nSegments++;
+           h_trackerMuons_segmentX->Fill(segment.x);
+           h_trackerMuons_segmentY->Fill(segment.y);
+         }
+       }
+       h_trackerMuons_numberOfSegments->Fill(nSegments);
+     }
+   }
+   h_trackerMuons_size->Fill(nTRK);
+
+
+
+   // Fill segments histograms
    h_total1_number->Fill(dtSegments->size() + cscSegments->size() + rpcRecHits->size());
    h_total2_number->Fill(dtSegments->size() + cscSegments->size() + rpcRecHits->size() + gemSegments->size() + gemRecHits->size());
    h_dtSegments_number->Fill(dtSegments->size());

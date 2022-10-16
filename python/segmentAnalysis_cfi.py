@@ -5,6 +5,9 @@ segmentAnalysis = cms.EDAnalyzer('segmentAnalyzer',
     EventInfo = cms.InputTag("generator"),
     RunInfo = cms.InputTag("generator"),
 
+    ## Muons
+    muonCollection  = cms.InputTag("muons"),
+
     ## Segments
     DTRecSegment4DCollectionLabel = cms.InputTag("dt4DSegments"),
     CSCSegmentCollectionLabel     = cms.InputTag("cscSegments"),

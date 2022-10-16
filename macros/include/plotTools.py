@@ -90,7 +90,6 @@ def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = Fal
     reference.GetYaxis().SetTitleSize(0.045)
     reference.GetYaxis().SetLabelSize(0.045)
     reference.GetXaxis().SetLabelSize(0)
-    reference.GetXaxis().SetTitle(reference.GetTitle())
 
     ratio = target.Clone(target.GetName() + '_ratio')
     ratio.Reset()
