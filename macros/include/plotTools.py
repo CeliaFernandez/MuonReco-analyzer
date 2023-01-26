@@ -66,7 +66,7 @@ def plot2D(histo, output, zlog = False, rebin = False, maxDigits = False):
     c1.SaveAs(output + histo.GetName()+'.png')
 
 
-def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = False, rebin = False):
+def plotValidation(name, target, reference, output, tlabel, rlabel, relval, ylog = False, rebin = False):
 
     target.Sumw2()
     reference.Sumw2()
@@ -90,7 +90,7 @@ def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = Fal
     reference.GetYaxis().SetTitleSize(0.045)
     reference.GetYaxis().SetLabelSize(0.045)
     reference.GetXaxis().SetLabelSize(0)
-    reference.GetXaxis().SetTitle(reference.GetTitle())
+    #reference.GetXaxis().SetTitle(reference.GetTitle())
 
     ratio = target.Clone(target.GetName() + '_ratio')
     ratio.Reset()
@@ -119,7 +119,7 @@ def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = Fal
     ratio.SetMarkerColor(r.kRed)
     ratio.SetLineColor(r.kRed)
     ratio.SetLineWidth(2)
-    #ratio.SetFillColor(r.kRed)
+    ratio.SetFillColor(r.kRed)
     ratio.SetMarkerStyle(20)
     ratio.Sumw2()
 
@@ -151,16 +151,16 @@ def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = Fal
 
     ### pad 1 drawing
     pad1.cd()
-    reference.Draw('HIST')
+    reference.Draw('P')
     target.Draw('P SAMES')
 
-    legend = r.TLegend(0.5, 0.76, 0.85, 0.87)
+    legend = r.TLegend(0.35, 0.76, 0.7, 0.87)
     legend.SetFillStyle(0)
     legend.SetTextFont(42)
     legend.SetTextSize(0.035)
     legend.SetLineWidth(0)
     legend.SetBorderSize(0)
-    legend.AddEntry(reference, rlabel + " ({0})".format(int(reference.GetEntries())), 'l')
+    legend.AddEntry(reference, rlabel + " ({0})".format(int(reference.GetEntries())), 'pl')
     legend.AddEntry(target, tlabel + " ({0})".format(int(target.GetEntries())), 'pl')
     legend.Draw()
 
@@ -204,9 +204,136 @@ def plotValidation(target, reference, output, tlabel, rlabel, relval, ylog = Fal
 
     ## Save the plot
     if output[-1] != '/': output = output + '/'
-    c1.SaveAs(output + target.GetName()+'.png')
+    c1.SaveAs(output + name +'.png')
 
 
+def plotEfficiency(name, target, reference, output, tlabel, rlabel, relval, ylog = False, rebin = False):
+
+    target.SetMarkerSize(1)
+    target.SetMarkerStyle(24)
+    target.SetMarkerColor(r.kBlue)
+    target.SetLineColor(r.kBlue)
+    target.SetLineWidth(2)
+    #target.GetYaxis().SetLabelSize(0.045)
+
+    reference.SetMarkerSize(1)
+    reference.SetMarkerStyle(20)
+    reference.SetLineWidth(2)
+    reference.SetLineColor(r.kBlack)
+    reference.SetMarkerColor(r.kBlack)
+    #reference.GetYaxis().SetTitleSize(0.045)
+    #reference.GetYaxis().SetLabelSize(0.045)
+    #reference.GetXaxis().SetLabelSize(0)
+    #reference.GetXaxis().SetTitle(reference.GetTitle())
+
+    tmp_num = target.GetTotalHistogram().Clone()
+    tmp_den = reference.GetTotalHistogram().Clone()
+    for n in range(0,tmp_num.GetNbinsX()):
+        tmp_den.SetBinContent(n+1, reference.GetEfficiency(n+1))
+        tmp_num.SetBinContent(n+1, target.GetEfficiency(n+1))
+        tmp_den.SetBinError(n+1, reference.GetEfficiencyErrorLow(n+1))
+        tmp_num.SetBinError(n+1, target.GetEfficiencyErrorLow(n+1))
+    ratio = tmp_num.Clone(name+'_ratio')
+    ratio.Divide(tmp_den) 
+
+    #ratio.SetTitle(";"+reference.GetXaxis().GetTitle()+";Ratio")
+    ratio.GetYaxis().CenterTitle()
+    ratio.GetYaxis().SetTitleOffset(0.4)
+    ratio.GetYaxis().SetTitleSize(0.14)
+    ratio.GetYaxis().SetLabelSize(0.14)
+    ratio.GetXaxis().SetLabelSize(0.14)
+    ratio.GetXaxis().SetTitleSize(0.14)
+    ratio.SetMarkerColor(r.kRed)
+    ratio.SetLineColor(r.kRed)
+    ratio.SetLineWidth(2)
+    #ratio.SetFillColor(r.kRed)
+    ratio.SetMarkerStyle(20)
+    ratio.Sumw2()
+
+    target.SetTitle(';;')
+    reference.SetTitle(';;Counts')
+
+    c1 = r.TCanvas("c1", "", 550, 600)
+    c1.cd()
+
+    pad1 = r.TPad("pad1", "pad1", 0, 0.25, 1, 1.0)
+    pad1.SetBottomMargin(0.03)
+    if ylog:
+        pad1.SetLogy(1)
+    pad1.Draw()
+
+    ### pad 2 drawing
+    r.gStyle.SetOptStat(0)
+    pad2 = r.TPad("pad2", "pad2", 0, 0.0, 1, 0.25)
+    pad2.SetTopMargin(0.0);
+    pad2.SetBottomMargin(0.30);
+    pad2.Draw();
+
+    ### pad 1 drawing
+    _h = r.TH1F("h", "", 1, tmp_num.GetBinLowEdge(1), tmp_num.GetBinLowEdge(tmp_num.GetNbinsX()) + tmp_num.GetBinWidth(tmp_num.GetNbinsX()))
+    _h.SetMinimum(0.8)
+    _h.SetMaximum(1.1)
+    _h.GetYaxis().SetTitleSize(0.045)
+    _h.GetYaxis().SetLabelSize(0.045)
+    _h.GetXaxis().SetLabelSize(0)
+    pad1.cd()
+    _h.Draw("AXIS")
+    reference.Draw('P, SAME')
+    target.Draw('P, SAME')
+
+    legend = r.TLegend(0.35, 0.76, 0.7, 0.87)
+    legend.SetFillStyle(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.035)
+    legend.SetLineWidth(0)
+    legend.SetBorderSize(0)
+    legend.AddEntry(reference, rlabel, 'pl')
+    legend.AddEntry(target, tlabel, 'pl')
+    legend.Draw()
+
+
+    ### pad2 drawing
+    pad2.cd()
+    ratio.SetMinimum(0.992)
+    ratio.SetMaximum(1.008)
+    ratio.Draw("P,SAME")
+    line = r.TLine(ratio.GetBinLowEdge(1), 1, ratio.GetBinLowEdge(ratio.GetNbinsX()+1), 1)
+    line.Draw("Same")
+
+
+    ### RelVal text
+    pad1.cd()
+    rvlabel = r.TLatex()
+    rvlabel.SetNDC()
+    rvlabel.SetTextAngle(0)
+    rvlabel.SetTextColor(r.kBlack)
+    rvlabel.SetTextFont(42)
+    rvlabel.SetTextAlign(31)
+    rvlabel.SetTextSize(0.035)
+    rvlabel.DrawLatex(0.85, 0.935, relval)
+
+    ## CMS logo
+    latex = TLatex()
+    latex.SetNDC();
+    latex.SetTextAngle(0);
+    latex.SetTextColor(r.kBlack);
+    latex.SetTextFont(42);
+    latex.SetTextAlign(11);
+    latex.SetTextSize(0.065);
+    latex.DrawLatex(0.17, 0.83, "#bf{CMS}")
+
+    latexb = TLatex()
+    latexb.SetNDC();
+    latexb.SetTextAngle(0);
+    latexb.SetTextColor(r.kBlack);
+    latexb.SetTextFont(42);
+    latexb.SetTextAlign(11);
+    latexb.SetTextSize(0.042);
+    latexb.DrawLatex(0.17, 0.78, "#it{Internal}")
+
+    ## Save the plot
+    if output[-1] != '/': output = output + '/'
+    c1.SaveAs(output + name +'.png')
 
 
 
