@@ -124,12 +124,35 @@ class standardRECOAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResourc
       TH1F *h_pfIsoR03_sumNeutralHadronEtHighThreshold;
       TH1F *h_pfIsoR03_sumPhotonEtHighThreshold;
       TH1F *h_pfIsoR03_sumPUPt;
+      TH1F *h_glb_normalizedChi2;
+      TH1F *h_glb_numberOfValidMuonHits;
+      TH1F *h_glb_numberOfMatchedStations;
+      TH1F *h_glb_dxy;
+      TH1F *h_glb_dz;
+      TH1F *h_glb_trackerLayers;
+      TH1F *h_glb_pixelLayers;
+      TH1F *h_trk_trackerLayers;
+      TH1F *h_trk_pixelLayers;
+      TH1F *h_trk_dxy;
+      TH1F *h_trk_dz;
 
       // Efficiencies definition
       // reco (wrt gen):
       TEfficiency *e_mu_pt;
       TEfficiency *e_mu_eta;
       TEfficiency *e_mu_phi;
+      TEfficiency *e_glb_pt_PFIsoLoose;
+      TEfficiency *e_glb_pt_PFIsoMedium;
+      TEfficiency *e_glb_pt_PFIsoTight;
+      TEfficiency *e_glb_eta_PFIsoLoose;
+      TEfficiency *e_glb_eta_PFIsoMedium;
+      TEfficiency *e_glb_eta_PFIsoTight;
+      TEfficiency *e_glb_pt_TightID;
+      TEfficiency *e_glb_eta_TightID;
+      TEfficiency *e_promptglb_pt_TightID;
+      TEfficiency *e_promptglb_eta_TightID;
+      TEfficiency *e_trk_pt_SoftID;
+      TEfficiency *e_trk_eta_SoftID;
 
 
       // Output definition
@@ -157,6 +180,7 @@ standardRECOAnalyzer::standardRECOAnalyzer(const edm::ParameterSet& iConfig)
    h_gen_eta = new TH1F("h_gen_eta", ";Gen muon #eta;", 60, -3, 3);
    h_gen_phi = new TH1F("h_gen_phi", ";Gen muon #phi;", 60, -3.14, 3.14);
 
+
    h_mu_pt = new TH1F("h_mu_pt", ";Reco muon p_{T} (GeV);", 60, 0, 1000);
    h_mu_eta = new TH1F("h_mu_eta", ";Reco muon #eta;", 60, -3, 3);
    h_mu_phi = new TH1F("h_mu_phi", ";Reco muon #phi;", 60, -3.14, 3.14);
@@ -177,9 +201,34 @@ standardRECOAnalyzer::standardRECOAnalyzer(const edm::ParameterSet& iConfig)
    h_pfIsoR03_sumPhotonEtHighThreshold = new TH1F("h_pfIsoR03_sumPhotonEtHighThreshold", ";muon->pfIsolationR03().sumPhotonEtHighThreshold;", 20, 0, 20);
    h_pfIsoR03_sumPUPt = new TH1F("h_pfIsoR03_sumPUPt", ";muon->pfIsolationR03().sumPUPt;", 20, 0, 20);
 
-   e_mu_pt = new TEfficiency("e_mu_pt", ";Generated p_{T} (GeV); Efficiency", 60, 0, 1000);
-   e_mu_eta = new TEfficiency("e_mu_eta", ";Generated #eta; Efficiency", 60, -3, 3);
-   e_mu_phi = new TEfficiency("e_mu_phi", ";Generated #phi; Efficiency", 60, -3.14, 3.14);
+   h_glb_normalizedChi2 = new TH1F("h_glb_normalizedChi2", ";GLB muon #chi^{2}/ndf;", 100, 0, 100);
+   h_glb_numberOfValidMuonHits = new TH1F("h_glb_numberOfValidMuonHits", ";GLB muon valid hits;", 50, 0, 55);
+   h_glb_numberOfMatchedStations = new TH1F("h_glb_numberOfMatchedStations", ";GLB muon matched stations;", 4, 0, 4);
+   h_glb_dxy = new TH1F("h_glb_dxy", ";GLB muon |d_{xy}| (cm);", 50, 0, 2);
+   h_glb_dz = new TH1F("h_glb_dz", ";GLB muon |d_{z}| (cm);", 50, 0, 5);
+   h_glb_trackerLayers = new TH1F("h_glb_trackerLayers", ";GLB muon number of tracker layers;", 25, 0, 25);
+   h_glb_pixelLayers = new TH1F("h_glb_pixelLayers", ";GLB muon number of pixel layers;", 10, 0, 10);
+
+   h_trk_trackerLayers = new TH1F("h_trk_trackerLayers", ";TRK muon number of tracker layers;", 25, 0, 25);
+   h_trk_pixelLayers = new TH1F("h_trk_pixelLayers", ";TRK muon number of pixel layers;", 10, 0, 10);
+   h_trk_dxy = new TH1F("h_trk_dxy", ";TRK muon |d_{xy}| (cm);", 50, 0, 2);
+   h_trk_dz = new TH1F("h_trk_dz", ";TRK muon |d_{z}| (cm);", 50, 0, 5);
+
+   e_mu_pt = new TEfficiency("e_mu_pt", ";Generated p_{T} (GeV); Reconstruction efficiency", 60, 0, 1000);
+   e_mu_eta = new TEfficiency("e_mu_eta", ";Generated #eta; Reconstruction efficiency", 60, -2.5, 2.5);
+   e_mu_phi = new TEfficiency("e_mu_phi", ";Generated #phi; Reconstruction efficiency", 60, -3.14, 3.14);
+   e_glb_pt_PFIsoLoose = new TEfficiency("e_glb_pt_PFIsoLoose", ";GLB muon p_{T} (GeV); PFIsoLoose efficiency", 60, 0, 1000);
+   e_glb_eta_PFIsoLoose = new TEfficiency("e_glb_eta_PFIsoLoose", ";GLB muon #eta; PFIsoLoose efficiency", 60, -2.5, 2.5);
+   e_glb_pt_PFIsoMedium = new TEfficiency("e_glb_pt_PFIsoMedium", ";GLB muon p_{T} (GeV); PFIsoMedium efficiency", 60, 0, 1000);
+   e_glb_eta_PFIsoMedium = new TEfficiency("e_glb_eta_PFIsoMedium", ";GLB muon #eta; PFIsoMedium efficiency", 60, -2.5, 2.5);
+   e_glb_pt_PFIsoTight = new TEfficiency("e_glb_pt_PFIsoTight", ";GLB muon p_{T} (GeV); PFIsoTight efficiency", 60, 0, 1000);
+   e_glb_eta_PFIsoTight = new TEfficiency("e_glb_eta_PFIsoTight", ";GLB muon #eta; PFIsoTight efficiency", 60, -2.5, 2.5);
+   e_glb_pt_TightID = new TEfficiency("e_glb_pt_TightID", ";GLB muon p_{T} (GeV); TightID efficiency", 60, 0, 1000);
+   e_glb_eta_TightID = new TEfficiency("e_glb_eta_TightID", ";GLB muon #eta; TightID efficiency", 60, -2.5, 2.5);
+   e_promptglb_pt_TightID = new TEfficiency("e_promptglb_pt_TightID", ";GLB muon p_{T} (GeV); TightID efficiency", 60, 0, 1000);
+   e_promptglb_eta_TightID = new TEfficiency("e_promptglb_eta_TightID", ";GLB muon #eta; TightID efficiency", 60, -2.5, 2.5);
+   e_trk_pt_SoftID = new TEfficiency("e_trk_pt_SoftID", ";TRK muon p_{T} (GeV); SoftID efficiency", 60, 0, 1000);
+   e_trk_eta_SoftID = new TEfficiency("e_trk_eta_SoftID", ";TRK muon #eta; SoftID efficiency", 60, -2.5, 2.5);
 
 }
 
@@ -234,9 +283,32 @@ void standardRECOAnalyzer::endJob()
   h_pfIsoR03_sumNeutralHadronEtHighThreshold->Write();
   h_pfIsoR03_sumPhotonEtHighThreshold->Write();
   h_pfIsoR03_sumPUPt->Write();
+  h_glb_normalizedChi2->Write();
+  h_glb_numberOfValidMuonHits->Write();
+  h_glb_dxy->Write();
+  h_glb_dz->Write();
+  h_glb_numberOfMatchedStations->Write();
+  h_glb_trackerLayers->Write();
+  h_glb_pixelLayers->Write();
+  h_trk_trackerLayers->Write();
+  h_trk_pixelLayers->Write();
+  h_trk_dxy->Write();
+  h_trk_dz->Write();
   e_mu_pt->Write();
   e_mu_eta->Write();
   e_mu_phi->Write();
+  e_glb_pt_PFIsoLoose->Write();
+  e_glb_eta_PFIsoLoose->Write();
+  e_glb_pt_PFIsoMedium->Write();
+  e_glb_eta_PFIsoMedium->Write();
+  e_glb_pt_PFIsoTight->Write();
+  e_glb_eta_PFIsoTight->Write();
+  e_glb_pt_TightID->Write();
+  e_glb_eta_TightID->Write();
+  e_promptglb_pt_TightID->Write();
+  e_promptglb_eta_TightID->Write();
+  e_trk_pt_SoftID->Write();
+  e_trk_eta_SoftID->Write();
   file_out->Close();
 
 }
@@ -295,29 +367,6 @@ void standardRECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
      h_mu_eta->Fill(mu.eta());
      h_mu_phi->Fill(mu.phi());
 
-     if ( mu.isIsolationValid() ) {
-       h_isoR03_sumPt->Fill(mu.isolationR03().sumPt);
-       h_isoR03_emEt->Fill(mu.isolationR03().emEt);
-       h_isoR03_hadEt->Fill(mu.isolationR03().hadEt);
-       h_isoR03_hoEt->Fill(mu.isolationR03().hoEt);
-       h_isoR03_nTracks->Fill(mu.isolationR03().nTracks);
-       h_isoR03_nJets->Fill(mu.isolationR03().nJets);
-       h_isoR03_trackerVetoPt->Fill(mu.isolationR03().trackerVetoPt);
-       h_isoR03_emVetoEt->Fill(mu.isolationR03().emVetoEt);
-       h_isoR03_hadVetoEt->Fill(mu.isolationR03().hadVetoEt);
-       h_isoR03_hoVetoEt->Fill(mu.isolationR03().hoVetoEt);
-     }
-
-     if ( mu.isPFIsolationValid() ) {
-
-       h_pfIsoR03_sumChargedHadronPt->Fill(mu.pfIsolationR03().sumChargedHadronPt);
-       h_pfIsoR03_sumNeutralHadronEt->Fill(mu.pfIsolationR03().sumNeutralHadronEt);
-       h_pfIsoR03_sumPhotonEt->Fill(mu.pfIsolationR03().sumPhotonEt);
-       h_pfIsoR03_sumNeutralHadronEtHighThreshold->Fill(mu.pfIsolationR03().sumNeutralHadronEtHighThreshold);
-       h_pfIsoR03_sumPhotonEtHighThreshold->Fill(mu.pfIsolationR03().sumPhotonEtHighThreshold);
-       h_pfIsoR03_sumPUPt->Fill(mu.pfIsolationR03().sumPUPt);
-
-     }
 
    } 
    
@@ -349,9 +398,73 @@ void standardRECOAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
      }
 
      if (delR < 0.2) {
+
+       // Reco efficiencies
        e_mu_pt->Fill(true, gp.pt());
        e_mu_eta->Fill(true, gp.eta());
        e_mu_phi->Fill(true, gp.phi());
+
+       if ( bestMu.isGlobalMuon() ) {
+         e_glb_pt_PFIsoLoose->Fill(bestMu.passed(reco::Muon::PFIsoLoose), bestMu.pt());
+         e_glb_pt_PFIsoMedium->Fill(bestMu.passed(reco::Muon::PFIsoMedium), bestMu.pt());
+         e_glb_pt_PFIsoTight->Fill(bestMu.passed(reco::Muon::PFIsoTight), bestMu.pt());
+         e_glb_eta_PFIsoLoose->Fill(bestMu.passed(reco::Muon::PFIsoLoose), bestMu.eta());
+         e_glb_eta_PFIsoMedium->Fill(bestMu.passed(reco::Muon::PFIsoMedium), bestMu.eta());
+         e_glb_eta_PFIsoTight->Fill(bestMu.passed(reco::Muon::PFIsoTight), bestMu.eta());
+
+       }
+
+       if ( bestMu.isIsolationValid() ) {
+         h_isoR03_sumPt->Fill(bestMu.isolationR03().sumPt);
+         h_isoR03_emEt->Fill(bestMu.isolationR03().emEt);
+         h_isoR03_hadEt->Fill(bestMu.isolationR03().hadEt);
+         h_isoR03_hoEt->Fill(bestMu.isolationR03().hoEt);
+         h_isoR03_nTracks->Fill(bestMu.isolationR03().nTracks);
+         h_isoR03_nJets->Fill(bestMu.isolationR03().nJets);
+         h_isoR03_trackerVetoPt->Fill(bestMu.isolationR03().trackerVetoPt);
+         h_isoR03_emVetoEt->Fill(bestMu.isolationR03().emVetoEt);
+         h_isoR03_hadVetoEt->Fill(bestMu.isolationR03().hadVetoEt);
+         h_isoR03_hoVetoEt->Fill(bestMu.isolationR03().hoVetoEt);
+       }
+
+       if ( bestMu.isPFIsolationValid() ) {
+
+         h_pfIsoR03_sumChargedHadronPt->Fill(bestMu.pfIsolationR03().sumChargedHadronPt);
+         h_pfIsoR03_sumNeutralHadronEt->Fill(bestMu.pfIsolationR03().sumNeutralHadronEt);
+         h_pfIsoR03_sumPhotonEt->Fill(bestMu.pfIsolationR03().sumPhotonEt);
+         h_pfIsoR03_sumNeutralHadronEtHighThreshold->Fill(bestMu.pfIsolationR03().sumNeutralHadronEtHighThreshold);
+         h_pfIsoR03_sumPhotonEtHighThreshold->Fill(bestMu.pfIsolationR03().sumPhotonEtHighThreshold);
+         h_pfIsoR03_sumPUPt->Fill(bestMu.pfIsolationR03().sumPUPt);
+
+       }
+
+       // Tight ID efficiencies
+       if (bestMu.isGlobalMuon() && bestMu.isPFMuon()) {
+         h_glb_normalizedChi2->Fill(bestMu.globalTrack()->normalizedChi2());
+         h_glb_numberOfValidMuonHits->Fill(bestMu.globalTrack()->hitPattern().numberOfValidMuonHits());
+         h_glb_numberOfMatchedStations->Fill(bestMu.numberOfMatchedStations());
+         h_glb_dxy->Fill(fabs(bestMu.muonBestTrack()->dxy()));
+         h_glb_dz->Fill(fabs(bestMu.muonBestTrack()->dz()));
+         h_glb_trackerLayers->Fill(bestMu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+         h_glb_pixelLayers->Fill(bestMu.innerTrack()->hitPattern().pixelLayersWithMeasurement());
+         e_glb_pt_TightID->Fill(bestMu.passed(reco::Muon::CutBasedIdTight), bestMu.pt());
+         e_glb_eta_TightID->Fill(bestMu.passed(reco::Muon::CutBasedIdTight), bestMu.eta());
+         if (fabs(bestMu.muonBestTrack()->dxy()) < 0.2 && fabs(bestMu.muonBestTrack()->dz()) < 0.5 ) {
+           e_promptglb_pt_TightID->Fill(bestMu.passed(reco::Muon::CutBasedIdTight), bestMu.pt());
+           e_promptglb_eta_TightID->Fill(bestMu.passed(reco::Muon::CutBasedIdTight), bestMu.eta());
+         }
+       }
+
+       // Tight ID efficiencies
+       if (bestMu.isTrackerMuon()) {
+         h_trk_trackerLayers->Fill(bestMu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+         h_trk_pixelLayers->Fill(bestMu.innerTrack()->hitPattern().pixelLayersWithMeasurement());
+         h_trk_dxy->Fill(fabs(bestMu.innerTrack()->dxy()));
+         h_trk_dz->Fill(fabs(bestMu.innerTrack()->dz()));
+         e_trk_pt_SoftID->Fill(bestMu.passed(reco::Muon::SoftCutBasedId), bestMu.pt());
+         e_trk_eta_SoftID->Fill(bestMu.passed(reco::Muon::SoftCutBasedId), bestMu.eta());
+       }
+
      } else {
        e_mu_pt->Fill(false, gp.pt());
        e_mu_eta->Fill(false, gp.eta());

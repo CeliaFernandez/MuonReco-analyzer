@@ -33,7 +33,7 @@ inputdirs = ['/eos/cms/store/mc/Run3Summer22EEDR/Mu_FlatPt-1to1000-gun/AODSIM/Po
 listOfFiles = []
 for inputdir in inputdirs:
     listOfFiles += ['file:' + os.path.join(inputdir, f) for f in os.listdir(inputdir) if '.root' in f]
-listOfFiles = listOfFiles[:30]
+listOfFiles = listOfFiles[:3]
 #listOfFiles = ['file:/eos/user/f/fernance/Muon-POG/displacedCollection-implementation/11834.21/step3_220411/output_0.root']
 
 process.source = cms.Source(

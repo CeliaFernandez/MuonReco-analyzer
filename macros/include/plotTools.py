@@ -130,7 +130,7 @@ def plotValidation(name, target, reference, output, tlabel, rlabel, relval, ylog
         reference.SetMaximum(1.4*ymax)
         reference.SetMinimum(0.0)
     else:
-        reference.SetMaximum(10.*ymax)
+        reference.SetMaximum(100.*ymax)
         reference.SetMinimum(0.1)
 
     c1 = r.TCanvas("c1", "", 550, 600)
@@ -181,7 +181,7 @@ def plotValidation(name, target, reference, output, tlabel, rlabel, relval, ylog
     rvlabel.SetTextFont(42)
     rvlabel.SetTextAlign(31)
     rvlabel.SetTextSize(0.035)
-    rvlabel.DrawLatex(0.85, 0.935, relval)
+    rvlabel.DrawLatex(0.88, 0.935, relval)
 
     ## CMS logo
     latex = TLatex()
@@ -237,6 +237,7 @@ def plotEfficiency(name, target, reference, output, tlabel, rlabel, relval, ylog
     ratio.Divide(tmp_den) 
 
     #ratio.SetTitle(";"+reference.GetXaxis().GetTitle()+";Ratio")
+    ratio.GetYaxis().SetTitle("Ratio")
     ratio.GetYaxis().CenterTitle()
     ratio.GetYaxis().SetTitleOffset(0.4)
     ratio.GetYaxis().SetTitleSize(0.14)
@@ -249,9 +250,6 @@ def plotEfficiency(name, target, reference, output, tlabel, rlabel, relval, ylog
     #ratio.SetFillColor(r.kRed)
     ratio.SetMarkerStyle(20)
     ratio.Sumw2()
-
-    target.SetTitle(';;')
-    reference.SetTitle(';;Counts')
 
     c1 = r.TCanvas("c1", "", 550, 600)
     c1.cd()
@@ -270,10 +268,11 @@ def plotEfficiency(name, target, reference, output, tlabel, rlabel, relval, ylog
     pad2.Draw();
 
     ### pad 1 drawing
-    _h = r.TH1F("h", "", 1, tmp_num.GetBinLowEdge(1), tmp_num.GetBinLowEdge(tmp_num.GetNbinsX()) + tmp_num.GetBinWidth(tmp_num.GetNbinsX()))
-    _h.SetMinimum(0.8)
-    _h.SetMaximum(1.1)
+    _h = r.TH1F("h", ";;Efficiency", 1, tmp_num.GetBinLowEdge(1), tmp_num.GetBinLowEdge(tmp_num.GetNbinsX()) + tmp_num.GetBinWidth(tmp_num.GetNbinsX()))
+    _h.SetMinimum(0.0)
+    _h.SetMaximum(1.25)
     _h.GetYaxis().SetTitleSize(0.045)
+    _h.GetYaxis().SetTitle(tmp_num.GetYaxis().GetTitle())
     _h.GetYaxis().SetLabelSize(0.045)
     _h.GetXaxis().SetLabelSize(0)
     pad1.cd()
@@ -294,9 +293,9 @@ def plotEfficiency(name, target, reference, output, tlabel, rlabel, relval, ylog
 
     ### pad2 drawing
     pad2.cd()
-    ratio.SetMinimum(0.992)
-    ratio.SetMaximum(1.008)
-    ratio.Draw("P,SAME")
+    #ratio.SetMinimum(0.9)
+    #ratio.SetMaximum(1.1)
+    ratio.Draw("P")
     line = r.TLine(ratio.GetBinLowEdge(1), 1, ratio.GetBinLowEdge(ratio.GetNbinsX()+1), 1)
     line.Draw("Same")
 
