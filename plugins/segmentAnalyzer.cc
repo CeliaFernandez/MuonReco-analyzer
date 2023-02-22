@@ -89,8 +89,10 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       //
 
       // Muon collection
-      //edm::EDGetTokenT<edm::View<pat::Muon> > patToken_;
-      //edm::Handle<edm::View<pat::Muon> > patCollection_;
+      edm::EDGetTokenT<edm::View<reco::Muon> > muonToken_;
+      edm::Handle<edm::View<reco::Muon> > muonCollection_;
+      edm::EDGetTokenT<edm::View<reco::Track> > trackToken_;
+      edm::Handle<edm::View<reco::Track> > trackCollection_;
 
       // Segment labels
       edm::InputTag theDTRecSegment4DCollectionLabel;
@@ -119,8 +121,8 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       Int_t luminosityBlock = 0;
       Int_t run = 0;
 
-      // Histograms definition
-
+      // Segments histograms
+      // (study the performance of reco segments)
       TH1F* h_total1_number;
       TH1F* h_total2_number;
       TH1F* h_dtSegments_number;
@@ -129,6 +131,36 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       TH1F* h_rpcHits_number;
       TH1F* h_gemHits_number;
       TH2F* h_dtSegments_cscSegments_number;
+
+      // Muon histogras histograms
+      // (study the performance of tracker muon segments)
+      TH1F* h_trackerMuons_size;
+      TH1F* h_trackerMuons_numberOfMatches;
+      TH1F* h_trackerMuons_numberOfSegments;
+      TH1F* h_trackerMuons_segmentX;
+      TH1F* h_trackerMuons_segmentY;
+
+      TH1F* h_inner_pt;
+      TH1F* h_inner_eta;
+      TH1F* h_inner_hits;
+      TH1F* h_inner_missingouterhits;
+      TH1F* h_inner_missingfraction;
+      TH1F* h_inner_chi2;
+      TH1F* h_inner_algo;
+      TH1F* h_inner_ptError;
+      TH1F* h_inner_etaError;
+      TH1F* h_inner_phiError;
+
+      TH1F* h_track_pt;
+      TH1F* h_track_eta;
+      TH1F* h_track_hits;
+      TH1F* h_track_missingouterhits;
+      TH1F* h_inner_missingfraction;
+      TH1F* h_track_chi2;
+      TH1F* h_track_algo;
+      TH1F* h_track_ptError;
+      TH1F* h_track_etaError;
+      TH1F* h_track_phiError;
 
       // Output definition
       TFile *file_out;
@@ -148,6 +180,9 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
 
    parameters = iConfig;
    
+   muonToken_     = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
+   trackToken_     = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("trackCollection"));
+
    theDTRecSegment4DCollectionLabel = iConfig.getParameter<edm::InputTag>("DTRecSegment4DCollectionLabel");
    theCSCSegmentCollectionLabel     = iConfig.getParameter<edm::InputTag>("CSCSegmentCollectionLabel");
    theGEMSegmentCollectionLabel     = iConfig.getParameter<edm::InputTag>("GEMSegmentCollectionLabel");
@@ -160,10 +195,9 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    gemSegmentsToken = consumes<GEMSegmentCollection>(theGEMSegmentCollectionLabel);
    rpcHitsToken     = consumes<RPCRecHitCollection>(theRPCHitCollectionLabel);
    gemHitsToken     = consumes<GEMRecHitCollection>(theGEMHitCollectionLabel);
-
-   //gemSegmentsToken = iC.consumes<GEMSegmentCollection>(theGEMSegmentCollectionLabel);
    //me0SegmentsToken = iC.consumes<ME0SegmentCollection>(theME0SegmentCollectionLabel);
 
+   // Histograms
    h_total1_number        = new TH1F("h_total1_number", "; dtSegments.size() + cscSegments.size() + rpcRecHits.size(); Events", 100, 0, 100);
    h_total2_number        = new TH1F("h_total2_number", "; dtSegments.size() + cscSegments.size() + rpcRecHits.size() + gemSegments.size() + gemRecHits.size(); Events", 100, 0, 100);
    h_dtSegments_number    = new TH1F("h_dtSegments_number", "; dtSegments.size(); Events", 30, 0, 30);
@@ -174,6 +208,32 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    //h_me0Segments_number   = new TH1F("h_me0Segments_number", "; me0Segments.size(); Events", 30, 0, 30);
    h_dtSegments_cscSegments_number   = new TH2F("h_dtSegments_cscSegments_number", "; dtSegments.size(); cscSegments.size()", 30, 0, 30, 30, 0, 30);
 
+   h_trackerMuons_size               = new TH1F("h_trackerMuons_size", "; Number of Tracker Muons; Events", 25, 0, 25);
+   h_trackerMuons_numberOfMatches    = new TH1F("h_trackerMuons_numberOfMatches", "; muon.numberOfMatches(); Events", 14, 0, 14);
+   h_trackerMuons_numberOfSegments   = new TH1F("h_trackerMuons_numberOfSegments", "; Number of segments; Events", 30, 0, 30);
+   h_trackerMuons_segmentX           = new TH1F("h_trackerMuons_segmentX", "; Segment X position; Events", 50, -200 , 200);
+   h_trackerMuons_segmentY           = new TH1F("h_trackerMuons_segmentY", "; Segment Y position; Events", 50, -1 , 1);
+
+   // TrackerMuons vs generalTracks
+   h_inner_pt  = new TH1F("h_inner_pt", "; Track p_{T}; Events", 80, 0, 80);
+   h_inner_eta = new TH1F("h_inner_eta", "; Track #eta; Events", 50, -3, 3);
+   h_inner_hits = new TH1F("h_inner_hits", "; Track hits; Events", 50, 0, 50);
+   h_inner_missingouterhits = new TH1F("h_inner_missingouterhits", "; Track missing outer hits; Events", 50, 0, 50);
+   h_inner_chi2 = new TH1F("h_inner_chi2", "; Track #Chi^2/ndof; Events", 50, 0, 50);
+   h_inner_algo = new TH1F("h_inner_algo", "; Track algorithm; Events", 46, 0, 46);
+   h_inner_ptError  = new TH1F("h_inner_ptError", "; Track p_{T} error; Events", 50, 0, 50);
+   h_inner_etaError  = new TH1F("h_inner_etaError", "; Track #eta error; Events", 50, 0, 50);
+   h_inner_phiError  = new TH1F("h_inner_phiError", "; Track #phi error; Events", 50, 0, 50);
+
+   h_track_pt  = new TH1F("h_track_pt", "; Track p_{T}; Events", 80, 0, 80);
+   h_track_eta = new TH1F("h_track_eta", "; Track #eta; Events", 50, -3, 3);
+   h_track_hits = new TH1F("h_track_hits", "; Track hits; Events", 50, 0, 50);
+   h_track_missingouterhits = new TH1F("h_track_missingouterhits", "; Track missing outer hits; Events", 50, 0, 50);
+   h_track_chi2 = new TH1F("h_track_chi2", "; Track #Chi^2/ndof; Events", 50, 0, 50);
+   h_track_algo = new TH1F("h_track_algo", "; Track algorithm; Events", 46, 0, 46);
+   h_track_ptError  = new TH1F("h_track_ptError", "; Track p_{T} error; Events", 50, 0, 50);
+   h_track_etaError  = new TH1F("h_track_etaError", "; Track #eta error; Events", 50, 0, 50);
+   h_track_phiError  = new TH1F("h_track_phiError", "; Track #phi error; Events", 50, 0, 50);
 
 }
 
@@ -206,6 +266,13 @@ void segmentAnalyzer::endJob()
 {
   std::cout << "End Job" << std::endl;
   file_out->cd();
+
+  h_trackerMuons_size->Write();
+  h_trackerMuons_numberOfMatches->Write();
+  h_trackerMuons_numberOfSegments->Write();
+  h_trackerMuons_segmentX->Write();
+  h_trackerMuons_segmentY->Write();
+
   h_total1_number->Write();
   h_total2_number->Write();
   h_dtSegments_number->Write();
@@ -214,6 +281,27 @@ void segmentAnalyzer::endJob()
   h_rpcHits_number->Write();
   h_gemHits_number->Write();
   h_dtSegments_cscSegments_number->Write();
+
+  h_inner_pt->Write();
+  h_inner_eta->Write();
+  h_inner_hits->Write();
+  h_inner_missingouterhits->Write();
+  h_inner_missingfraction->Write();
+  h_inner_chi2->Write();
+  h_inner_algo->Write();
+  h_inner_ptError->Write();
+  h_inner_etaError->Write();
+  h_inner_phiError->Write();
+  h_track_pt->Write();
+  h_track_eta->Write();
+  h_track_hits->Write();
+  h_track_missingfraction->Write();
+  h_track_chi2->Write();
+  h_track_algo->Write();
+  h_track_ptError->Write();
+  h_track_etaError->Write();
+  h_track_phiError->Write();
+
   file_out->Close();
 
 }
@@ -240,6 +328,9 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    //
    // -- Get the collections
    //
+
+   iEvent.getByToken(muonToken_, muonCollection_);
+   iEvent.getByToken(trackToken_, trackCollection_);
 
    edm::Handle<DTRecSegment4DCollection> dtSegments;
    iEvent.getByToken(dtSegmentsToken, dtSegments);
@@ -279,6 +370,85 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    //
    // -- Main analysis
    //
+   //
+
+   // Fill muon analyiss
+   int nTRK;
+   int nChambersDT;
+   int nChambersCSC;
+   int nSegments;
+   nTRK = 0;
+   for (size_t i = 0; i < muonCollection_->size(); i++) {
+     const reco::Muon &muon = (*muonCollection_)[i];
+     if (muon.isTrackerMuon()) {
+
+       nTRK++;
+
+       h_trackerMuons_numberOfMatches->Fill(muon.numberOfMatches());
+       // Loop over chambers
+       nChambersDT = 0;
+       nChambersCSC = 0;
+       nSegments = 0;
+       for (auto& chamber : muon.matches()) {
+         if (chamber.detector() == MuonSubdetId::DT)
+           nChambersDT++; 
+         if (chamber.detector() == MuonSubdetId::CSC)
+           nChambersCSC++; 
+         for (auto& segment : chamber.segmentMatches) {
+           nSegments++;
+           h_trackerMuons_segmentX->Fill(segment.x);
+           h_trackerMuons_segmentY->Fill(segment.y);
+         }
+       }
+       h_trackerMuons_numberOfSegments->Fill(nSegments);
+
+       if(muon.innerTrack().isNonnull()) {
+         h_inner_pt->Fill(muon.innerTrack()->pt());
+         h_inner_eta->Fill(muon.innerTrack()->eta());
+         h_inner_hits->Fill(muon.innerTrack()->numberOfValidHits());
+         h_inner_missingouterhits->Fill(muon.innerTrack()->missingOuterHits());
+         h_track_missingfraction->Fill(muon.innerTrack()->missingOuterHits()/muon.innerTrack()->numberOfValidHits());
+         h_inner_chi2->Fill(muon.innerTrack()->normalizedChi2());
+         h_inner_algo->Fill(muon.innerTrack()->algo());
+         h_inner_ptError->Fill(muon.innerTrack()->ptError());
+         h_inner_etaError->Fill(muon.innerTrack()->etaError());
+         h_inner_phiError->Fill(muon.innerTrack()->phiError());
+
+       }
+
+
+     }
+   }
+   h_trackerMuons_size->Fill(nTRK);
+
+   for (size_t i = 0; i < trackCollection_->size(); i++) {
+     const reco::Track &track = trackCollection_->at(i);
+
+     bool isMuon = false; 
+     for (size_t j = 0; j < muonCollection_->size(); j++) {
+       const reco::Muon &ref = (*muonCollection_)[j];
+       if (ref.innerTrack().get() == &track) {
+         isMuon = true;
+         break;
+       }
+     }
+     if (isMuon)
+       continue;
+     
+     h_track_pt->Fill(track.pt());
+     h_track_eta->Fill(track.eta());
+     h_track_hits->Fill(track.numberOfValidHits());
+     h_track_missingouterhits->Fill(track.missingOuterHits());
+     h_track_missingfraction->Fill(track.missingOuterHits()/track.numberOfValidHits());
+     h_track_chi2->Fill(track.normalizedChi2());
+     h_track_algo->Fill(track.algo());
+     h_track_ptError->Fill(track.ptError());
+     h_track_etaError->Fill(track.etaError());
+     h_track_phiError->Fill(track.phiError());
+
+   }
+
+   // Fill segments histograms
    h_total1_number->Fill(dtSegments->size() + cscSegments->size() + rpcRecHits->size());
    h_total2_number->Fill(dtSegments->size() + cscSegments->size() + rpcRecHits->size() + gemSegments->size() + gemRecHits->size());
    h_dtSegments_number->Fill(dtSegments->size());
@@ -287,6 +457,7 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
    h_rpcHits_number->Fill(rpcRecHits->size());
    h_gemHits_number->Fill(gemRecHits->size());
    h_dtSegments_cscSegments_number->Fill(dtSegments->size(), cscSegments->size());
+
 
 
 }
