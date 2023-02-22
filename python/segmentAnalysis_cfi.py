@@ -7,6 +7,7 @@ segmentAnalysis = cms.EDAnalyzer('segmentAnalyzer',
 
     ## Muons
     muonCollection  = cms.InputTag("muons"),
+    trackCollection  = cms.InputTag("generalTracks"),
 
     ## Segments
     DTRecSegment4DCollectionLabel = cms.InputTag("dt4DSegments"),

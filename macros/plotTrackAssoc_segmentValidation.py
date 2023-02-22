@@ -12,7 +12,7 @@ if __name__ == "__main__":
     r.gStyle.SetPadRightMargin(0.12)
 
     filenameFIXED = '/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/Analysis/CMSSW_12_6_0_pre2/src/MuonReco-Analysis/MuonReco-analyzer/output_segmentAnalysis.root'
-    filenameRAW = '/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/Analysis/CMSSW_12_6_0_pre2/src/MuonReco-Analysis/MuonReco-analyzer/output_segmentAnalysis_original400.root'
+    filenameRAW = '/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/Analysis/CMSSW_12_6_0_pre2/src/MuonReco-Analysis/MuonReco-analyzer/output_segmentAnalysis_original.root'
 
     ## Plot histograms
     RAW_trackerMuons_size             = getObject(filenameRAW, 'h_trackerMuons_size')
@@ -27,8 +27,8 @@ if __name__ == "__main__":
     FIXED_trackerMuons_segmentX         = getObject(filenameFIXED, 'h_trackerMuons_segmentX')
     FIXED_trackerMuons_segmentY         = getObject(filenameFIXED, 'h_trackerMuons_segmentY')
 
-    plotValidation(FIXED_trackerMuons_size, RAW_trackerMuons_size, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Fixed', 'Original', "", ylog = False)
-    plotValidation(FIXED_trackerMuons_numberOfMatches, RAW_trackerMuons_numberOfMatches, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Fixed', 'Original', "", ylog = False)
-    plotValidation(FIXED_trackerMuons_numberOfSegments, RAW_trackerMuons_numberOfSegments, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Fixed', 'Original', "", ylog = False)
-    plotValidation(FIXED_trackerMuons_segmentX, RAW_trackerMuons_segmentX, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Fixed', 'Original', "", ylog = False)
-    plotValidation(FIXED_trackerMuons_segmentY, RAW_trackerMuons_segmentY, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Fixed', 'Original', "", ylog = False)
+    plotValidation(FIXED_trackerMuons_size, RAW_trackerMuons_size, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Modified', 'Original', "", ylog = False)
+    plotValidation(FIXED_trackerMuons_numberOfMatches, RAW_trackerMuons_numberOfMatches, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Modified', 'Original', "", ylog = False)
+    plotValidation(FIXED_trackerMuons_numberOfSegments, RAW_trackerMuons_numberOfSegments, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Modified', 'Original', "", ylog = False)
+    plotValidation(FIXED_trackerMuons_segmentX, RAW_trackerMuons_segmentX, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Modified', 'Original', "", ylog = False)
+    plotValidation(FIXED_trackerMuons_segmentY, RAW_trackerMuons_segmentY, '/eos/user/f/fernance/www/MuonPOG/TrackAssociator-Validation221016/', 'Modified', 'Original', "", ylog = False)
