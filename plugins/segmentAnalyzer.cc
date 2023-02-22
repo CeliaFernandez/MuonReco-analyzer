@@ -154,7 +154,7 @@ class segmentAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
       TH1F* h_track_eta;
       TH1F* h_track_hits;
       TH1F* h_track_missingouterhits;
-      TH1F* h_inner_missingfraction;
+      TH1F* h_track_missingfraction;
       TH1F* h_track_chi2;
       TH1F* h_track_algo;
       TH1F* h_track_ptError;
