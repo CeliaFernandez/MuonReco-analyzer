@@ -43,3 +43,12 @@ Event list with duplicated muons reported at eta~0 are available in test/skims/e
 ```
 edmPickEvents.py "/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/RunIISummer20UL16RECO-106X_mcRun2_asymptotic_v13-v2/AODSIM" eventlist_duplicates_eta0.txt --crab
 ```
+
+## Scripts
+
+Set of useful scripts to use when studying the reco::Muon object.
+
+#### printDisplacedSize_AOD.py and printDisplacedSize_MINI.py
+
+Used to measure the size taken by the displacedMuons and slimmedDisplacedMuons collections.
+
