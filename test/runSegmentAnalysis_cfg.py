@@ -39,24 +39,19 @@ nEvents = -1
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-#listOfFiles = ['/store/relval/CMSSW_12_6_0_pre2/RelValSingleMuPt100/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/1d014bdd-abc3-41b9-b4f2-2334f009ff7f.root']
-#listOfFiles = ['/store/relval/CMSSW_12_6_0_pre2/RelValTTbar_14TeV/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/4dd813aa-b6fd-4480-a38c-4cd7709e6a9d.root']
-#listOfFiles.append('/store/relval/CMSSW_12_6_0_pre2/RelValTTbar_14TeV/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/b0c132e7-3224-4344-897f-a5c558c4f8ce.root')
-#listOfFiles = ['file:/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/TrackAssociator-study/CMSSW_12_6_0_pre2/src/timing/step3.root']
-listOfFiles = ['file:/afs/cern.ch/work/f/fernance/private/MuonPOG/L3-RECO/MuonReco-analysis/TrackAssociator-study/reference/CMSSW_12_6_0_pre2/src/step3.root']
+listOfFiles = ['file:/eos/user/f/fernance/Muon-POG/TrackAssociatorIssue/CRAB_PrivateMC/step3_iter_fixed/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU_400.root']
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(0)
   )
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_v5')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic')
 
 ## Define the process to run 
 ## 
 
 process.load("MuonReco-Analysis.MuonReco-analyzer.segmentAnalysis_cfi")
-#process.segmentAnalysis.nameOfOutput = 'output_segmentAnalysis.root'
-process.segmentAnalysis.nameOfOutput = 'output_segmentAnalysis_original.root'
+process.segmentAnalysis.nameOfOutput = 'output_segmentAnalysis.root'
 process.p = cms.EndPath(process.segmentAnalysis)
 

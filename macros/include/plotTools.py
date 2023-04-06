@@ -181,7 +181,8 @@ def plotValidation(name, target, reference, output, tlabel, rlabel, relval, ylog
     rvlabel.SetTextFont(42)
     rvlabel.SetTextAlign(31)
     rvlabel.SetTextSize(0.035)
-    rvlabel.DrawLatex(0.88, 0.935, relval)
+    if relval:
+        rvlabel.DrawLatex(0.88, 0.935, relval)
 
     ## CMS logo
     latex = TLatex()

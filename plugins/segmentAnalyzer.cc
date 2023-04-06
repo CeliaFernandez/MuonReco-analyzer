@@ -218,6 +218,7 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    h_inner_eta = new TH1F("h_inner_eta", "; Track #eta; Events", 50, -3, 3);
    h_inner_hits = new TH1F("h_inner_hits", "; Track hits; Events", 50, 0, 50);
    h_inner_missingouterhits = new TH1F("h_inner_missingouterhits", "; Track missing outer hits; Events", 50, 0, 50);
+   h_inner_missingfraction = new TH1F("h_inner_missingfraction", "; Track missing hit fraction; Events", 50, 0, 1);
    h_inner_chi2 = new TH1F("h_inner_chi2", "; Track #Chi^2/ndof; Events", 50, 0, 50);
    h_inner_algo = new TH1F("h_inner_algo", "; Track algorithm; Events", 46, 0, 46);
    h_inner_ptError  = new TH1F("h_inner_ptError", "; Track p_{T} error; Events", 50, 0, 50);
@@ -228,6 +229,7 @@ segmentAnalyzer::segmentAnalyzer(const edm::ParameterSet& iConfig)
    h_track_eta = new TH1F("h_track_eta", "; Track #eta; Events", 50, -3, 3);
    h_track_hits = new TH1F("h_track_hits", "; Track hits; Events", 50, 0, 50);
    h_track_missingouterhits = new TH1F("h_track_missingouterhits", "; Track missing outer hits; Events", 50, 0, 50);
+   h_track_missingfraction = new TH1F("h_track_missingfraction", "; Track missing hit fraction; Events", 50, 0, 1);
    h_track_chi2 = new TH1F("h_track_chi2", "; Track #Chi^2/ndof; Events", 50, 0, 50);
    h_track_algo = new TH1F("h_track_algo", "; Track algorithm; Events", 46, 0, 46);
    h_track_ptError  = new TH1F("h_track_ptError", "; Track p_{T} error; Events", 50, 0, 50);
@@ -406,7 +408,7 @@ void segmentAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& i
          h_inner_eta->Fill(muon.innerTrack()->eta());
          h_inner_hits->Fill(muon.innerTrack()->numberOfValidHits());
          h_inner_missingouterhits->Fill(muon.innerTrack()->missingOuterHits());
-         h_track_missingfraction->Fill(muon.innerTrack()->missingOuterHits()/muon.innerTrack()->numberOfValidHits());
+         h_inner_missingfraction->Fill(muon.innerTrack()->missingOuterHits()/muon.innerTrack()->numberOfValidHits());
          h_inner_chi2->Fill(muon.innerTrack()->normalizedChi2());
          h_inner_algo->Fill(muon.innerTrack()->algo());
          h_inner_ptError->Fill(muon.innerTrack()->ptError());
