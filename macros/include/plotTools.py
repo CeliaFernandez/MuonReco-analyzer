@@ -13,6 +13,228 @@ def getObject(filename, key):
 
     return _hcopy
 
+def plotComparison(name, tree_new, tree_ref, var, cut, nbin, xmin, xmax, label = ''):
+
+    histo_new = r.TH1F(name + "_new", "", nbin, xmin, xmax)
+    histo_ref = r.TH1F(name + "_ref", "", nbin, xmin, xmax)
+    histo_new.Sumw2()
+    histo_ref.Sumw2()
+    tree_ref.Project(histo_ref.GetName(), var, cut, "")
+    tree_new.Project(histo_new.GetName(), var, cut, "")
+    histo_sub = histo_new.Clone(name + "_sub")
+    histo_sub.Add(histo_ref, -1)
+
+    ## Tune histos
+    histo_ref.SetMarkerSize(1)
+    histo_ref.SetMarkerStyle(20)
+    histo_ref.SetLineWidth(2)
+    histo_ref.SetLineColor(r.kBlack)
+    histo_ref.SetMarkerColor(r.kBlack)
+    histo_ref.GetYaxis().SetTitleSize(0.045)
+    histo_ref.GetYaxis().SetLabelSize(0.045)
+    histo_ref.GetXaxis().SetLabelSize(0.045)
+    histo_ref.GetXaxis().SetTitle(var)
+    histo_ref.GetYaxis().SetTitle('Counts')
+    histo_ref.SetMinimum(histo_sub.GetMinimum())
+
+    histo_new.SetMarkerSize(1)
+    histo_new.SetMarkerStyle(24)
+    histo_new.SetMarkerColor(r.kRed)
+    histo_new.SetLineColor(r.kRed)
+    histo_new.SetLineWidth(2)
+    histo_new.GetYaxis().SetLabelSize(0.045)
+
+    histo_sub.SetMarkerSize(1)
+    histo_sub.SetMarkerStyle(20)
+    histo_sub.SetLineWidth(2)
+    histo_sub.SetLineColor(r.kBlue)
+    histo_sub.SetMarkerColor(r.kBlue)
+    histo_sub.GetYaxis().SetTitleSize(0.045)
+
+    ## Legend
+    legend = r.TLegend(0.55, 0.76, 0.8, 0.87)
+    legend.SetFillStyle(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.035)
+    legend.SetLineWidth(0)
+    legend.SetBorderSize(0)
+    legend.AddEntry(histo_ref, 'Reference', 'l')
+    legend.AddEntry(histo_new, 'New', 'pl')
+    legend.AddEntry(histo_sub, 'New - Reference', 'l')
+
+    ## Zero line
+    line = r.TLine(xmin, 0, xmax, 0)
+    line.SetLineColor(r.kGray+2)
+    line.SetLineWidth(2)
+    line.SetLineStyle(7)
+
+    ## Plot histos
+    c1 = r.TCanvas("c1", "", 700, 600)
+    c1.cd()
+    #c1.SetLogy(1)
+
+    histo_ref.Draw("HIST")
+    line.Draw("SAME")
+    histo_new.Draw("P, SAMES")
+    histo_sub.Draw("HIST,SAME")
+    legend.Draw()
+
+    ## CMS logo
+    latex = TLatex()
+    latex.SetNDC();
+    latex.SetTextAngle(0);
+    latex.SetTextColor(r.kBlack);
+    latex.SetTextFont(42);
+    latex.SetTextAlign(11);
+    latex.SetTextSize(0.065);
+    latex.DrawLatex(0.17, 0.83, "#bf{CMS}")
+
+    latexb = TLatex()
+    latexb.SetNDC();
+    latexb.SetTextAngle(0);
+    latexb.SetTextColor(r.kBlack);
+    latexb.SetTextFont(42);
+    latexb.SetTextAlign(11);
+    latexb.SetTextSize(0.042);
+    latexb.DrawLatex(0.17, 0.78, "#it{Internal}")
+
+    uplabel = TLatex()
+    uplabel.SetNDC();
+    uplabel.SetTextAngle(0);
+    uplabel.SetTextColor(r.kBlack);
+    uplabel.SetTextFont(42);
+    uplabel.SetTextAlign(11);
+    uplabel.SetTextSize(0.032);
+    uplabel.DrawLatex(0.13, 0.93, label)
+
+
+    c1.SaveAs('tupleplots/' + name + '.png')
+
+
+def plotComparisonRatio(name, tree_new, tree_ref, var, cut, nbin, xmin, xmax, label = '', output = 'ratiotuples', ylog = False):
+
+    histo_new = r.TH1F(name + "_new", "", nbin, xmin, xmax)
+    histo_ref = r.TH1F(name + "_ref", "", nbin, xmin, xmax)
+    histo_new.Sumw2()
+    histo_ref.Sumw2()
+    tree_ref.Project(histo_ref.GetName(), var, cut, "")
+    tree_new.Project(histo_new.GetName(), var, cut, "")
+    histo_sub = histo_new.Clone(name + "_sub")
+    histo_sub.Add(histo_ref, -1)
+
+    ## Tune histos
+    histo_ref.SetMarkerSize(1)
+    histo_ref.SetMarkerStyle(20)
+    histo_ref.SetLineWidth(2)
+    histo_ref.SetLineColor(r.kBlack)
+    histo_ref.SetMarkerColor(r.kBlack)
+    histo_ref.GetYaxis().SetTitleSize(0.045)
+    histo_ref.GetYaxis().SetLabelSize(0.045)
+    histo_ref.GetXaxis().SetLabelSize(0)
+    histo_ref.GetXaxis().SetTitle(var)
+    histo_ref.GetYaxis().SetTitle('Counts')
+
+    histo_new.SetMarkerSize(1)
+    histo_new.SetMarkerStyle(24)
+    histo_new.SetMarkerColor(r.kRed)
+    histo_new.SetLineColor(r.kRed)
+    histo_new.SetLineWidth(2)
+    histo_new.GetYaxis().SetLabelSize(0.045)
+
+    histo_sub.SetMarkerSize(1)
+    histo_sub.SetMarkerStyle(20)
+    histo_sub.SetLineWidth(2)
+    histo_sub.SetLineColor(r.kBlue)
+    histo_sub.SetMarkerColor(r.kBlue)
+    histo_sub.GetYaxis().SetTitleSize(0.14)
+    histo_sub.GetXaxis().SetTitleSize(0.14)
+    histo_sub.GetYaxis().SetLabelSize(0.14)
+    histo_sub.GetXaxis().SetLabelSize(0.14)
+    histo_sub.GetXaxis().SetTitle(var)
+    histo_sub.GetYaxis().SetTitle('New - Ref')
+    histo_sub.GetYaxis().CenterTitle()
+    histo_sub.GetYaxis().SetTitleOffset(0.45)
+    histo_sub.GetXaxis().SetTitleOffset(1.0)
+
+    c1 = r.TCanvas("c1", "", 550, 600)
+    c1.cd()
+
+    pad1 = r.TPad("pad1", "pad1", 0, 0.25, 1, 1.0)
+    pad1.SetBottomMargin(0.03)
+    if ylog:
+        pad1.SetLogy(1)
+    pad1.Draw()
+
+    ### pad 2 drawing
+    r.gStyle.SetOptStat(0)
+    pad2 = r.TPad("pad2", "pad2", 0, 0.0, 1, 0.25)
+    pad2.SetTopMargin(0.0);
+    pad2.SetBottomMargin(0.30);
+    pad2.Draw();
+
+    ### pad 1 drawing
+    pad1.cd()
+    histo_ref.Draw("HIST")
+    histo_new.Draw("P, SAMES")
+     
+
+    legend = r.TLegend(0.5, 0.76, 0.8, 0.87)
+    legend.SetFillStyle(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.035)
+    legend.SetLineWidth(0)
+    legend.SetBorderSize(0)
+    legend.AddEntry(histo_ref, 'Reference', 'l')
+    legend.AddEntry(histo_new, 'New', 'pl')
+    legend.AddEntry(histo_sub, 'New - Reference', 'l')
+    legend.Draw()
+
+
+    ### pad2 drawing
+    pad2.cd()
+    histo_sub.Draw("HIST,SAME")
+    line = r.TLine(xmin, 0, xmax, 0)
+    line.SetLineColor(r.kGray+2)
+    line.SetLineWidth(2)
+    line.SetLineStyle(7)
+    line.Draw("Same")
+
+
+    ## CMS logo
+    pad1.cd()
+    latex = TLatex()
+    latex.SetNDC();
+    latex.SetTextAngle(0);
+    latex.SetTextColor(r.kBlack);
+    latex.SetTextFont(42);
+    latex.SetTextAlign(11);
+    latex.SetTextSize(0.065);
+    latex.DrawLatex(0.17, 0.83, "#bf{CMS}")
+
+    latexb = TLatex()
+    latexb.SetNDC();
+    latexb.SetTextAngle(0);
+    latexb.SetTextColor(r.kBlack);
+    latexb.SetTextFont(42);
+    latexb.SetTextAlign(11);
+    latexb.SetTextSize(0.042);
+    latexb.DrawLatex(0.17, 0.78, "#it{Internal}")
+
+    uplabel = TLatex()
+    uplabel.SetNDC();
+    uplabel.SetTextAngle(0);
+    uplabel.SetTextColor(r.kBlack);
+    uplabel.SetTextFont(42);
+    uplabel.SetTextAlign(11);
+    uplabel.SetTextSize(0.035);
+    uplabel.DrawLatex(0.13, 0.93, label)
+
+    ## Save the plot
+    if output[-1] != '/': output = output + '/'
+    c1.SaveAs(output + name +'.png')
+
+
+
 def plot2D(histo, output, zlog = False, rebin = False, maxDigits = False):
 
     histo.Sumw2()
