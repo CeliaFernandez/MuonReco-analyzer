@@ -40,13 +40,15 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
 listOfFiles = ['file:/eos/user/f/fernance/Muon-POG/TrackAssociatorIssue/CRAB_PrivateMC/step3_iter_fixed/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_PU_400.root']
+listOfFiles = ['/store/data/Run2022D/Muon/AOD/PromptReco-v2/000/357/734/00000/011a59b3-42bc-493c-bc2b-73cbddcb0e79.root']
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(0)
   )
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4')
 
 ## Define the process to run 
 ## 

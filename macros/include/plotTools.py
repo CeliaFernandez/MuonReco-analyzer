@@ -13,6 +13,126 @@ def getObject(filename, key):
 
     return _hcopy
 
+
+def plotSimpleEfficiency(eff, output, option = 'AP', extralabel = ''):
+
+    c1 = r.TCanvas("c1", "", 700, 600)
+    c1.cd()
+    eff.Draw(option)
+
+    # CMS logo
+    latex = TLatex()
+    latex.SetNDC();
+    latex.SetTextAngle(0);
+    latex.SetTextColor(r.kBlack);
+    latex.SetTextFont(42);
+    latex.SetTextAlign(11);
+    latex.SetTextSize(0.055);
+    latex.DrawLatex(0.13, 0.93, "#bf{CMS}")
+
+    latexb = TLatex()
+    latexb.SetNDC();
+    latexb.SetTextAngle(0);
+    latexb.SetTextColor(r.kBlack);
+    latexb.SetTextFont(42);
+    latexb.SetTextAlign(11);
+    latexb.SetTextSize(0.04);
+    latexb.DrawLatex(0.23, 0.93, "#it{Internal}")
+
+    latexe = TLatex()
+    latexe.SetNDC();
+    latexe.SetTextAngle(0);
+    latexe.SetTextColor(r.kBlack);
+    latexe.SetTextFont(42);
+    latexe.SetTextAlign(31);
+    latexe.SetTextSize(0.04);
+    latexe.DrawLatex(0.9, 0.93, extralabel)
+
+    if output[-1] != '/': output = output + '/'
+    c1.SaveAs(output + eff.GetName()+'.png')
+
+def plotSimple(histos, output, option = 'HIST', ylog = False, rebin = False, maxDigits = False, extralabel = '', labels = []):
+
+
+    colors = [r.kBlue, r.kRed, r.kGreen+2]
+
+    # Make the plot bonito
+    for h,histo in enumerate(histos):
+        histo.Sumw2()
+        histo.GetXaxis().SetTitleSize(0.045)
+        histo.GetYaxis().SetTitleSize(0.045)
+        if maxDigits:
+            histo.GetXaxis().SetMaxDigits(maxDigits)
+            histo.GetYaxis().SetMaxDigits(maxDigits)
+
+        histo.SetLineColor(colors[h])
+        histo.SetLineWidth(2)
+
+    c1 = r.TCanvas("c1", "", 700, 600)
+    c1.cd()
+
+    if ylog:
+        histos[0].SetMaximum(100*histos[0].GetMaximum())
+        histos[0].SetMinimum(0.1)
+        c1.SetLogy(1)
+    else:
+        histos[0].SetMaximum(1.4*histos[0].GetMaximum())
+        histos[0].SetMinimum(0.0)
+
+    for h,histo in enumerate(histos):
+        if not h:
+            histo.Draw(option)
+        else:
+            histo.Draw(option+',SAME')
+
+    legend = r.TLegend(0.55, 0.76, 0.8, 0.87)
+    legend.SetFillStyle(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.035)
+    legend.SetLineWidth(0)
+    legend.SetBorderSize(0)
+    for h,histo in enumerate(histos):
+        legend.AddEntry(histo, labels[h], 'l')
+    legend.Draw()
+
+    # CMS logo
+    latex = TLatex()
+    latex.SetNDC();
+    latex.SetTextAngle(0);
+    latex.SetTextColor(r.kBlack);
+    latex.SetTextFont(42);
+    latex.SetTextAlign(11);
+    latex.SetTextSize(0.055);
+    if maxDigits:
+        latex.DrawLatex(0.23, 0.93, "#bf{CMS}")
+    else:
+        latex.DrawLatex(0.13, 0.93, "#bf{CMS}")
+
+    latexb = TLatex()
+    latexb.SetNDC();
+    latexb.SetTextAngle(0);
+    latexb.SetTextColor(r.kBlack);
+    latexb.SetTextFont(42);
+    latexb.SetTextAlign(11);
+    latexb.SetTextSize(0.04);
+    if maxDigits:
+        latexb.DrawLatex(0.33, 0.93, "#it{Internal}")
+    else:
+        latexb.DrawLatex(0.23, 0.93, "#it{Internal}")
+
+    latexe = TLatex()
+    latexe.SetNDC();
+    latexe.SetTextAngle(0);
+    latexe.SetTextColor(r.kBlack);
+    latexe.SetTextFont(42);
+    latexe.SetTextAlign(31);
+    latexe.SetTextSize(0.04);
+    latexe.DrawLatex(0.9, 0.93, extralabel)
+
+    if output[-1] != '/': output = output + '/'
+    c1.SaveAs(output + histo.GetName()+'.png')
+
+
 def plotComparison(name, tree_new, tree_ref, var, cut, nbin, xmin, xmax, label = ''):
 
     histo_new = r.TH1F(name + "_new", "", nbin, xmin, xmax)

@@ -24,8 +24,8 @@ process.options = cms.untracked.PSet(
   #numberOfThreads=cms.untracked.uint32(8)
 )
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
 
 # Select number of events to be processed
 nEvents = -1
@@ -33,7 +33,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
 isData = True # Always true by default (running on MC is useless)
-listOfFiles = ['/store/mc/RunIISummer20UL16RECO/DYJetsToMuMu_M-50_TuneCP5_13TeV-powhegMiNNLO-pythia8-photos/AODSIM/106X_mcRun2_asymptotic_v13-v2/00000/0001EFA7-97DF-4A45-84A9-79448BFD814B.root']
+#listOfFiles = ['/store/data/Run2022G/Muon/AOD/PromptReco-v1/000/362/433/00000/96cf0f3c-8aa0-45db-b898-a3820a80ecba.root']
+listOfFiles = ['/store/data/Run2022G/Muon/AOD/PromptReco-v1/000/362/438/00000/79a4613f-bbde-4e41-aefc-d590b2a53f82.root']
 
 if (isData):
   process.source = cms.Source("PoolSource",
@@ -41,7 +42,7 @@ if (isData):
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(0)
   )
-  process.GlobalTag = GlobalTag(process.GlobalTag, '106X_mcRun2_asymptotic_v13')
+  process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10')
 
 
 ## Load the analysis sequence

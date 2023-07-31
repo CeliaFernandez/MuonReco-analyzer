@@ -8,7 +8,8 @@ standaloneDuplicates = cms.EDAnalyzer('standaloneDuplicates',
     BeamSpot           = cms.InputTag("offlineBeamSpot"),
     muonCollection     = cms.InputTag("muons"),
     standAloneMuons    = cms.InputTag("standAloneMuons"),
-    standAloneMuonsVtx = cms.InputTag("standAloneMuons","UpdatedAtVtx")
+    standAloneMuonsVtx = cms.InputTag("standAloneMuons","UpdatedAtVtx"),
+    globalMuons    = cms.InputTag("globalMuons")
 
 )
 

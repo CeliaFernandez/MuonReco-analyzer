@@ -87,6 +87,8 @@ class standaloneDuplicates : public edm::one::EDAnalyzer<edm::one::SharedResourc
       edm::Handle<edm::View<reco::Track> > staTracks_;
       edm::EDGetTokenT<edm::View<reco::Track> > staVtxToken_;  // standAloneMuons::UpdatedAtVtx
       edm::Handle<edm::View<reco::Track> > staVtxTracks_;
+      edm::EDGetTokenT<edm::View<reco::Track> > glbToken_;     // globalMuons
+      edm::Handle<edm::View<reco::Track> > glbTracks_;
 
       // Muon collection
       edm::EDGetTokenT<edm::View<reco::Muon> > muonToken_;
@@ -111,8 +113,23 @@ class standaloneDuplicates : public edm::one::EDAnalyzer<edm::one::SharedResourc
       TH1F* h_bsta_pt;
       TH1F* h_gsta_eta;
       TH1F* h_bsta_eta;
+      TH1F* h_insta_pt;
+      TH1F* h_outsta_pt;
+      TH1F* h_insta_eta;
+      TH1F* h_outsta_eta;
+      TH2F* h_insta_pt_eta;
+      TH2F* h_outsta_pt_eta;
       TH2F* h_nonupd_upd_pt;
       TH2F* h_nonupd_upd_eta;
+      TH1F* h_allmuons_pt;
+      TH1F* h_allmuons_eta;
+      TH2F* h_allmuons_pt_eta;
+      TH1F* h_inmuons_pt;
+      TH1F* h_inmuons_eta;
+      TH2F* h_inmuons_pt_eta;
+      TH1F* h_outmuons_pt;
+      TH1F* h_outmuons_eta;
+      TH2F* h_outmuons_pt_eta;
 
 
       // reco::Muon Histograms (used to evaluate the presence of duplicates in the reco::Muon colletion)
@@ -160,14 +177,30 @@ standaloneDuplicates::standaloneDuplicates(const edm::ParameterSet& iConfig)
    muonToken_     = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
    staToken_      = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("standAloneMuons"));
    staVtxToken_   = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("standAloneMuonsVtx"));
+   glbToken_      = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("globalMuons"));
 
-   h_success                      = new TH1F("h_success", "standAloneMuons; Type; Tracks", 3, 0, 3);
-   h_gsta_pt                      = new TH1F("h_gSTA_pt", "standAloneMuons with refit; Track p_{T} (non-updated); Tracks", 50, 0, 100);
-   h_bsta_pt                      = new TH1F("h_bSTA_pt", "standAloneMuons without refit; Track p_{T} (non-updated); Tracks", 50, 0, 100);
-   h_gsta_eta                     = new TH1F("h_gSTA_eta", "standAloneMuons with refit; Track #eta (non-updated); Tracks", 100, -3, 3);
-   h_bsta_eta                     = new TH1F("h_bSTA_eta", "standAloneMuons without refit; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_success                      = new TH1F("h_success", "standAloneMuons; Type; Tracks", 4, 0, 4);
+   h_gsta_pt                      = new TH1F("h_gSTA_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_bsta_pt                      = new TH1F("h_bSTA_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_gsta_eta                     = new TH1F("h_gSTA_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_bsta_eta                     = new TH1F("h_bSTA_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_insta_pt                     = new TH1F("h_inSTA_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_outsta_pt                    = new TH1F("h_outSTA_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_insta_eta                    = new TH1F("h_inSTA_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_outsta_eta                   = new TH1F("h_outSTA_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_insta_pt_eta                 = new TH2F("h_inSTA_pt_eta", "; Track p_{T} (non-updated); Track #eta (non-updated)", 100, 0, 100, 100, -3, 3);
+   h_outsta_pt_eta                = new TH2F("h_outSTA_pt_eta", "; Track p_{T} (non-updated); Track #eta (non-updated)", 100, 0, 100, 100, -3, 3);
    h_nonupd_upd_pt                = new TH2F("h_upd_nonupd_pt", ";standAlone track p_{T}; standAlone track (updated) p_{T}", 50, 0, 100, 50, 0, 100);
    h_nonupd_upd_eta               = new TH2F("h_upd_nonupd_eta", ";standAlone track #eta; standAlone track (updated) #eta", 100, -3, 3, 100, -3, 3);
+   h_allmuons_pt                  = new TH1F("h_allmuons_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_allmuons_eta                 = new TH1F("h_allmuons_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_allmuons_pt_eta              = new TH2F("h_allmuons_pt_eta", "; Track p_{T} (non-updated); Tracks", 100, 0, 100, 100, -3, 3);
+   h_inmuons_pt                   = new TH1F("h_inmuons_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_inmuons_eta                  = new TH1F("h_inmuons_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_inmuons_pt_eta               = new TH2F("h_inmuons_pt_eta", "; Track p_{T} (non-updated); Tracks", 100, 0, 100, 100, -3, 3);
+   h_outmuons_pt                  = new TH1F("h_outmuons_pt", "; Track p_{T} (non-updated); Tracks", 100, 0, 100);
+   h_outmuons_eta                 = new TH1F("h_outmuons_eta", "; Track #eta (non-updated); Tracks", 100, -3, 3);
+   h_outmuons_pt_eta              = new TH2F("h_outmuons_pt_eta", "; Track p_{T} (non-updated); Tracks", 100, 0, 100, 100, -3, 3);
 
    h_nSTA                        = new TH1F("h_nSTA", "Number of StandAlone muons; Number of events; Counts", 10, 0, 10);
    h_STA_pt                      = new TH1F("h_STA_pt", "StandAlone muon p_{T} (GeV); Number of muons; Counts", 100, 0, 100);
@@ -229,8 +262,23 @@ void standaloneDuplicates::endJob()
   h_bsta_pt->Write();
   h_gsta_eta->Write();
   h_bsta_eta->Write();
+  h_insta_pt->Write();
+  h_outsta_pt->Write();
+  h_insta_eta->Write();
+  h_outsta_eta->Write();
+  h_outsta_pt_eta->Write();
+  h_insta_pt_eta->Write();
   h_nonupd_upd_pt->Write();
   h_nonupd_upd_eta->Write();
+  h_allmuons_pt->Write();
+  h_allmuons_eta->Write();
+  h_allmuons_pt_eta->Write();
+  h_inmuons_pt->Write();
+  h_inmuons_eta->Write();
+  h_inmuons_pt_eta->Write();
+  h_outmuons_pt->Write();
+  h_outmuons_eta->Write();
+  h_outmuons_pt_eta->Write();
 
   h_nSTA->Write();
   h_STA_pt->Write();
@@ -280,6 +328,7 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
    iEvent.getByToken(muonToken_, muonCollection_);
    iEvent.getByToken(staToken_, staTracks_);
    iEvent.getByToken(staVtxToken_, staVtxTracks_);
+   iEvent.getByToken(glbToken_, glbTracks_);
 
    //
    // -- Init the variables
@@ -314,6 +363,10 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
    goodRefit = false;
    bool lostMuon;
    lostMuon = false;
+   bool isGlobalMuon;
+   isGlobalMuon = false;
+   bool inMuons;
+   inMuons = false;
 
    for (size_t i = 0; i < staTracks_->size(); i++) { 
 
@@ -325,7 +378,7 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
 
        const reco::Track &staVtx = (*staVtxTracks_)[j];
 
-       if (sta.extra() == staVtx.extra()) {
+       if (sta.extra().get() == staVtx.extra().get()) {
          pair_refits.emplace_back( std::make_pair(sta, staVtx) );
          goodRefit = true;
          h_nonupd_upd_pt->Fill(sta.pt(), staVtx.pt());
@@ -335,24 +388,68 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
 
      }
 
+     // Check if the sta is in muons
+     inMuons = false;
+     for (size_t j = 0; j < muonCollection_->size(); j++) {
+       const reco::Muon &muon = (*muonCollection_)[j];
+       if (!muon.isStandAloneMuon())
+         continue;
+       if (muon.standAloneMuon()->extra().get() == sta.extra().get()) {
+         inMuons = true;
+         break; 
+       }
+     }
+     h_allmuons_pt->Fill(sta.pt());
+     h_allmuons_eta->Fill(sta.eta());
+     h_allmuons_pt_eta->Fill(sta.pt(), sta.eta());
+     if (inMuons) {
+       h_inmuons_pt->Fill(sta.pt());
+       h_inmuons_eta->Fill(sta.eta());
+       h_inmuons_pt_eta->Fill(sta.pt(), sta.eta());
+     } else {
+       h_outmuons_pt->Fill(sta.pt());
+       h_outmuons_eta->Fill(sta.eta());
+       h_outmuons_pt_eta->Fill(sta.pt(), sta.eta());
+     }
+
      if (!goodRefit) {
 
        h_success->Fill(1);
        failed_refits.push_back(sta);
        lostMuon = true; 
+       isGlobalMuon = false; 
 
+       // Check how many of them make it into global muons
+       for (size_t j = 0; j < glbTracks_->size(); j++) {
+         const reco::Track &glb = (*glbTracks_)[j];
+         // if (deltaR(glb, sta) < 0.15) {
+         if (glb.outerDetId() == sta.outerDetId()) {
+           isGlobalMuon = true;
+           //std::cout << glb.outerDetId() << "\t" << sta.outerDetId() << std::endl;
+           break;
+         }
+       }
+
+       if (!isGlobalMuon)
+         h_success->Fill(2);
+
+       // Check how many of them make into the muons collection
        for (size_t j = 0; j < muonCollection_->size(); j++) {
          const reco::Muon &muon = (*muonCollection_)[j];
          if (!muon.isStandAloneMuon())
            continue;
-         if (muon.standAloneMuon().get() == &sta) {
+         //if (muon.standAloneMuon().get() == &sta) {
+         //  lostMuon = false;
+         //  break; 
+         //}
+         if (muon.standAloneMuon()->extra().get() == sta.extra().get()) {
            lostMuon = false;
            break; 
          }
        }
 
        if (lostMuon) {
-         h_success->Fill(2);
+         h_success->Fill(3);
          lost_sta.push_back(sta);
        }
 
@@ -365,6 +462,13 @@ void standaloneDuplicates::analyze(const edm::Event& iEvent, const edm::EventSet
 
      }
 
+   }
+
+   for (size_t i = 0; i < lost_sta.size(); i++) {
+     const reco::Track &lost = lost_sta.at(i);
+     h_outsta_pt->Fill(lost.pt());
+     h_outsta_eta->Fill(lost.eta());
+     h_outsta_pt_eta->Fill(lost.pt(), lost.eta());
    }
 
    //std::cout << "Good refits: " << pair_refits.size() << "; Bad refits: " << failed_refits.size() << "; lost sta: " << lost_sta.size() << std::endl;
