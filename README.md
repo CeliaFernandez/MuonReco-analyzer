@@ -1,4 +1,4 @@
-![alt text](https://github.com/CeliaFernandez/MuonReco-analyzer/blob/main/.header.png?raw=true)
+
 # MuonReco Analyzer
 
 ## How to install
